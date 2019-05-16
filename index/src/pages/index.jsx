@@ -17,8 +17,6 @@ import Projects from "../views/Projects";
 import About from "../views/About";
 import Contact from "../views/Contact";
 
-import avatar from "../images/avatar.jpg";
-
 const ProjectsWrapper = styled.div`
   ${tw`flex flex-wrap justify-between mt-8`};
   display: grid;
@@ -35,10 +33,6 @@ const ProjectsWrapper = styled.div`
 
 const AboutHero = styled.div`
   ${tw`flex flex-col lg:flex-row items-center mt-8`};
-`;
-
-const Avatar = styled.img`
-  ${tw`rounded-full w-32 xl:w-48 shadow-lg h-auto`};
 `;
 
 const AboutSub = styled.span`
