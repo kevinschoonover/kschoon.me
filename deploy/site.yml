@@ -1,5 +1,13 @@
 ---
-- hosts: all
+- name: Install Nomad
+  hosts: nomad_instances
+  vars:
+      nomad_node_role: "both"
+  roles:
+    - ansible-nomad
+
   tasks:
-    - name: "Ping the host to make sure it is alive"
-      ping:
+    - name: Allow nomad ui with ufw
+      ufw: 
+        rule: allow
+        port: "4646" 
