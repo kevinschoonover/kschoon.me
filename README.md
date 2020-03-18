@@ -62,6 +62,8 @@ functionality is by exploring the directories containing each project. These
 include:
 + ``index`` - The code managing the 'Personal Landing Page'.
 + ``checkin`` - The code managing the 'Airline Check-in Page'.
++ ``deploy`` - All infrastructure as code (IaC) and instructions used to deploy
+  the services from scratch.
 
 Each project will contain its own installation / setup instructions to follow.
 
