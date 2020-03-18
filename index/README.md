@@ -1,69 +1,58 @@
-![](https://i.imgur.com/hWB1XRO.png)
+# kschoon.me
+[View Live](https://kschoon.me) |
+[Report Bug](https://github.com/kevinschoonover/kschoon.me/issues) |
+[Request Feature](https://github.com/kevinschoonover/kschoon.me/issues)
 
-# Gatsby Starter Portfolio: Cara
+Personal branding / landing page.
 
-A portfolio starter for [Gatsby](https://www.gatsbyjs.org/). The target audience are designers and photographers.
+<!-- TABLE OF CONTENTS -->
+## Table of Contents
 
-[Demo Website](https://cara.lekoarts.de)
+* [Getting Started](#getting-started)
+  * [Prerequisites](#prerequisites)
+  * [Installation](#installation)
+* [Usage](#usage)
+* [Roadmap](#roadmap)
+* [Contributing](#contributing)
+* [License](#license)
+* [Contact](#contact)
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/LeKoArts/gatsby-starter-portfolio-cara) [![Edit gatsby-starter-portfolio-cara](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/github/LeKoArts/gatsby-starter-portfolio-cara/tree/master/)
 
-[![CircleCI](https://circleci.com/gh/LekoArts/gatsby-starter-portfolio-cara.svg?style=svg)](https://circleci.com/gh/LekoArts/gatsby-starter-portfolio-cara) [![Netlify Status](https://api.netlify.com/api/v1/badges/88bbaef1-6f83-4894-8acd-e6512ff39265/deploy-status)](https://app.netlify.com/sites/portfolio-cara/deploys)
-
-- TailwindCSS & styled-components
-- React Spring
-- Playful & Colorful One-Page website with Parallax effect
-
-Thanks to [@bradlc](https://github.com/bradlc)’s work on [babel-plugin-tailwind-components](https://github.com/bradlc/babel-plugin-tailwind-components), we can easily get the power of Tailwind without the stylesheet bloat by passing Tailwind classes into styled-components with **Babel macros** 🎉.
-
-## Why?
-
-If you want to quickly bootstrap a design/photography portfolio or use it as a foundation for your personal site, the starters in _gatsby-starter-portfolio_ are a perfect fit for you! The project's goal is to offer minimalistic and fast websites.
-
-I hope you like my starters and create something awesome! To see some of my work, you can visit my [website](https://www.lekoarts.de) or support me on [Patreon](https://www.patreon.com/lekoarts) to get some neat rewards (4K images, project files, tutorial insights). Every pledge on Patreon helps me create more free starters!
-
-Also, check out the other starters for _gatsby-starter-portfolio_:
-
-- [gatsby-starter-portfolio-emma](https://github.com/LekoArts/gatsby-starter-portfolio-emma)
-- [gatsby-starter-portfolio-emilia](https://github.com/LekoArts/gatsby-starter-portfolio-emilia)
-- [gatsby-starter-portfolio-bella](https://github.com/LekoArts/gatsby-starter-portfolio-bella)
-- [gatsby-starter-portfolio-jodie](https://github.com/LekoArts/gatsby-starter-portfolio-jodie)
-
-Check out the [Gatsby Starter Portfolio Overview](https://gatsby-starter-portfolio.netlify.com/)!
-
-## Features
-
-- [React Spring](https://github.com/drcmda/react-spring) (Used for Parallax effect)
-- [TailwindCSS](https://tailwindcss.com/) & [styled-components](https://www.styled-components.com/) for styling
-  - Use the full power of TailwindCSS while generating small styles (as unused data gets deleted)
-  - Uses `tailwind.macro` (Babel macro) to have hot-reloading of Tailwind styles
-- SEO
-  - Schema.org JSONLD
-  - OpenGraph Tags
-  - Twitter Tags
-- [Typefaces](https://github.com/KyleAMathews/typefaces) for quicker font loading
-- Offline Support
-- WebApp Manifest Support
-- Responsive images
-  - The right image size for every screen size
-  - Traced SVG Loading (Lazy-Loading)
-  - WebP Support
-
-**Please note:** The parallax effect can be quite heavy for some older CPUs and the site uses some newer CSS features which will result in incompatibility with older browsers.
-
+<!-- GETTING STARTED -->
 ## Getting Started
 
-Check your development environment! You'll need [Node.js](https://nodejs.org/en/), the [Gatsby CLI](https://www.gatsbyjs.org/docs/) and [node-gyp](https://github.com/nodejs/node-gyp#installation) installed. The official Gatsby website also lists two articles regarding this topic:
+To get a local copy up and running follow these simple steps.
 
-- [Gatsby on Windows](https://www.gatsbyjs.org/docs/gatsby-on-windows/)
-- [Check your development environment](https://www.gatsbyjs.org/tutorial/part-zero/)
+### Prerequisites
++ [Git](https://git-scm.com/download/)
++ [NodeJS](https://yarnpkg.com/getting-started) (at least current LTS)
++ [Yarn](https://yarnpkg.com/getting-started)
 
-To copy and install this starter run this command (with "project-name" being the name of your folder you wish to install it in):
-
+### Installation
+ 
+1. Clone the kschoon.me repository using Git Bash:
+```sh
+# Make sure to setup ssh keys on your github account
+# https://help.github.com/en/articles/adding-a-new-ssh-key-to-your-github-account
+git clone git@github.com:kevinschoonover/kschoon.me.git
 ```
-gatsby new project-name https://github.com/LekoArts/gatsby-starter-portfolio-cara
-cd project-name
-npm run dev
+
+2. Change into the `index` directory:
+```bash
+cd <YOUR_REPO_NAME>/index/
+```
+
+3. Install the necessary dependencies:
+```bash
+yarn
+```
+
+<!-- USAGE EXAMPLES -->
+## Usage
+
+### Serving the site locally
+```bash
+yarn dev
 ```
 
 ### Adding new features/plugins
@@ -73,12 +62,12 @@ You can add other features by having a look at the official [plugins page](https
 ### Building your site
 
 ```
-npm run build
+yarn build
 ```
 
 Copy the content of the `public` folder to your webhost or use a website like Netlify which automates that for you.
 
-## Configuration
+### Configuration
 
 You have multiple options to configure this project.
 
@@ -131,7 +120,7 @@ module.exports = {
 - The options `left` and `top` position the icon relatively to its parent container
 - You can also wrap the SVGs with `<UpDown />` or `<UpDownWide />` to animate them
 
-### Typography
+#### Typography
 
 Instead of relying on Google's CDN to host its fonts, this site self-hosts the fonts and therefore benefits from increased performance. The installed fonts can be found in `src/components/Layout.jsx`:
 
@@ -143,3 +132,56 @@ import 'typeface-open-sans';
 This starter uses [typefaces](https://github.com/KyleAMathews/typefaces) by Kyle Mathews. Have a look at the repository if you want to install & use other fonts.
 
 You'll also need to configure `fonts` in `tailwind.js` to reflect the changes. You then can use the fonts with `font-sans` and `font-serif`.
+
+
+<!-- ROADMAP -->
+## Roadmap
+
+See the [open issues](https://github.com/kevinschoonover/kschoon.me/issues) for a list
+of proposed features (and known issues).
+
+
+
+<!-- CONTRIBUTING -->
+## Contributing
+
+These are mostly just my personal projects, but if you're interested in
+contributing please:
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+
+
+<!-- LICENSE -->
+## License
+
+Distributed under the MPL-2.0 License. See `LICENSE` for more information.
+
+
+
+<!-- CONTACT -->
+## Contact
+
+Me - me@kschoon.me
+
+Project Link: [https://github.com/kevinschoonover/kschoon.me](https://github.com/kevinschoonover/kschoon.me)
+
+
+
+<!-- MARKDOWN LINKS & IMAGES -->
+<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
+[kevinschoonover-organization]: https://github.com/kevinschoonover/
+[contributors-shield]: https://img.shields.io/github/contributors/kevinschoonover/kschoon.me.svg?style=flat-square
+[contributors-url]: https://github.com/kevinschoonover/kschoon.me/graphs/contributors
+[forks-shield]: https://img.shields.io/github/forks/kevinschoonover/kschoon.me.svg?style=flat-square
+[forks-url]: https://github.com/kevinschoonover/kschoon.me/network/members
+[stars-shield]: https://img.shields.io/github/stars/kevinschoonover/kschoon.me.svg?style=flat-square
+[stars-url]: https://github.com/kevinschoonover/kschoon.me/stargazers
+[issues-shield]: https://img.shields.io/github/issues/kevinschoonover/kschoon.me.svg?style=flat-square
+[issues-url]: https://github.com/kevinschoonover/kschoon.me/issues
+[license-shield]: https://img.shields.io/github/license/kevinschoonover/kschoon.me?style=flat-square
+[license-url]: https://github.com/kevinschoonover/kschoon.me/blob/master/LICENSE.txt
