@@ -1,0 +1,32 @@
+---
+version: "3.0"
+services:
+  traefik: 
+    image: "traefik:v2.1.0"
+    command:
+      - --entrypoints.web.address=:80
+      - --entrypoints.secureweb.address=:443
+      - --providers.docker=true
+      - --api
+      - --certificatesResolvers.tls_resolver.acme.email=me@kschoon.me
+      - --certificatesResolvers.tls_resolver.acme.storage=/acme.json
+      - --certificatesResolvers.tls_resolver.acme.httpChallenge.entryPoint=web
+    labels:
+      - traefik.http.routers.http-catchall.rule=hostregexp(`{host:.+}`)
+      - traefik.http.routers.http-catchall.entrypoints=web
+      - traefik.http.routers.http-catchall.middlewares=redirect-to-https@docker
+      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      - traefik.http.routers.dashboard.rule=Host(`traefik.kschoon.me`)
+      - traefik.http.routers.dashboard.service=api@internal
+      - traefik.http.routers.dashboard.tls=true
+      - traefik.http.routers.dashboard.tls.certresolver=tls_resolver
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./acme.json:/acme.json"
+  web:
+    build: ./backend/
+    labels:
+      - traefik.enable=true 
+      - traefik.http.routers.api.rule=Host(`api.kschoon.me`)
+      - traefik.http.routers.api.tls=true
+      - traefik.http.routers.api.tls.certresolver=tls_resolver

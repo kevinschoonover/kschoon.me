@@ -1,3 +1,4 @@
 ---
-API_INSTALLATION_DIR: "/opt/kschoon_api/"
+API_INSTALLATION_DIR: "/opt/kschoon_api"
 API_USER: "kschoon_api"
+ACME_FILE_PATH: "{{ API_INSTALLATION_DIR }}/acme.json"

@@ -19,6 +19,29 @@
     state: directory
     recurse: yes
 
+- name: "See if acme file exists"
+  stat: 
+    path: "{{ ACME_FILE_PATH }}"
+  register: acme_file
+
+- name: "Create or update the acme.json"
+  file:
+    path: "{{ ACME_FILE_PATH }}"
+    owner: "{{ API_USER }}"
+    state: "{{ 'file' if  acme_file.stat.exists else 'touch' }}"
+    mode: 0600
+
+- name: "Install the pip3 python dependency manager"
+  package:
+    name: python3-pip
+    state: present
+
+- name: "Install the docker python modules"
+  pip:
+    name: 
+      - docker
+      - docker-compose
+    state: present
 
 - name: "Start the API"
   vars:
