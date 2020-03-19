@@ -1,0 +1,3 @@
+---
+API_INSTALLATION_DIR: "/opt/kschoon_api/"
+API_USER: "kschoon_api"

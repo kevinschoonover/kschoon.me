@@ -1,0 +1,28 @@
+---
+- name: "Create the API user"
+  user:
+    name: "{{ API_USER }}"
+    comment: "User responsible for managing the API"
+    system: yes
+    groups: 
+      - docker
+
+- name: "Clone the kschoon.me repo"
+  git:
+    repo: "https://github.com/kevinschoonover/kschoon.me.git"
+    dest: "{{ API_INSTALLATION_DIR }}"
+
+- name: "Update the API installation directory permissions"
+  file:
+    path: "{{ API_INSTALLATION_DIR }}"
+    owner: "{{ API_USER }}"
+    state: directory
+    recurse: yes
+
+
+- name: "Start the API"
+  vars:
+    DOCKER_DIR: "{{ API_INSTALLATION_DIR }}/backend/"
+  docker_compose:
+    build: yes
+    project_src: "{{ DOCKER_DIR }}"

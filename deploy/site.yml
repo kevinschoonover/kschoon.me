@@ -1,13 +1,17 @@
 ---
-- name: Install Nomad
-  hosts: nomad_instances
-  vars:
-      nomad_node_role: "both"
-  roles:
-    - ansible-nomad
+# - name: Install Nomad
+#   hosts: nomad_instances
+#   vars:
+#       nomad_node_role: "both"
+#   roles:
+#     - ansible-nomad
+#   tasks:
+#     - name: Allow nomad ui with ufw
+#       ufw: 
+#         rule: allow
+#         port: "4646" 
 
-  tasks:
-    - name: Allow nomad ui with ufw
-      ufw: 
-        rule: allow
-        port: "4646" 
+- name: Install API
+  hosts: api
+  roles:
+      - api
