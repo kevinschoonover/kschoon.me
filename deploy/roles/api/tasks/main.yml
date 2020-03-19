@@ -45,7 +45,10 @@
 
 - name: "Start the API"
   vars:
-    DOCKER_DIR: "{{ API_INSTALLATION_DIR }}/backend/"
+    DOCKER_DIR: "{{ API_INSTALLATION_DIR }}/"
   docker_compose:
     build: yes
+    files:
+      - docker-compose.yml
+      - docker-compose.production.yml
     project_src: "{{ DOCKER_DIR }}"
