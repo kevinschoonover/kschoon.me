@@ -18,6 +18,8 @@ services:
     build: ./backend/
     restart: unless-stopped
     command: /start-reload.sh
+    environment:
+      - LOG_LEVEL=debug
     depends_on:
       - db
     volumes:

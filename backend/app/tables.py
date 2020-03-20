@@ -15,7 +15,9 @@ checkins = sqlalchemy.Table(
     "checkins",
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
-    sqlalchemy.Column("reservation_number", sqlalchemy.String),
     sqlalchemy.Column("first_name", sqlalchemy.String),
     sqlalchemy.Column("last_name", sqlalchemy.String),
+    sqlalchemy.Column("reservation_code", sqlalchemy.String),
+    sqlalchemy.Column("status", sqlalchemy.Enum(CheckinStatus)),
+    sqlalchemy.Column("container_id", sqlalchemy.String),
 )
