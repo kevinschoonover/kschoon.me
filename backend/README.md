@@ -48,13 +48,13 @@ cd <YOUR_REPO_NAME>/backend/
 
 3. Install the necessary dependencies:
 ```bash
-pip install pipenv
-pipenv install
+pip install poetry
+poetry install
 ```
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-To **start** the entire backend **in development mode**:
+### To **start** the entire backend **in development mode**
 1. Change into the root directory of the repository:
     ```
     cd ../
@@ -65,8 +65,28 @@ To **start** the entire backend **in development mode**:
     docker-compose up
     ```
 
-To **deploy** a **production-ready version** of the backend, checkout the README
-located in `<GIT_REPO_ROOT>/deploy/`
+### To **deploy** a **production-ready version** of the backend
+Checkout the README located in `<GIT_REPO_ROOT>/deploy/`
+
+### To **managed dependencies**
+Use poetry:
++ To **update**:
+    ```
+    poetry update
+    ```
++ To **add**:
+    ```
+    poetry add <dependency>
+    ```
+
+But make sure to **update the requirements.txt AFTER applying any change**:
+```
+poetry export -f requirements.txt -o requirements.txt
+```
+
+This is because the docker build currently relies on the requirements.txt and
+not poetry. The may be changed after monitoring 
+[this issue on github](https://github.com/python-poetry/poetry/issues/1301).
 
 <!-- ROADMAP -->
 ## Roadmap
