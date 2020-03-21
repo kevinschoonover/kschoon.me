@@ -42,20 +42,13 @@ async def all_checkins():
     return await database.fetch_all(query)
 
 
-@app.get("/checkins/{checkin_id}", response_model=schema.Checkin)
-async def single_checkin(checkin_id: int):
-    query = tables.checkins.select().where(tables.checkins.c.id == checkin_id)
-    checkin = await database.fetch_one(query)
-
-    if checkin is None:
-        raise HTTPException(status_code=404, detail="Check-in not found")
-
-    return checkin
-
-
 @app.post("/checkins/", response_model=schema.Checkin)
 async def create_checkins(checkin: schema.CheckinCreate):
-    container = client.containers.run("hello-world", detach=True)
+    container = client.containers.run(
+        "pyro2927/southwestcheckin:latest",
+        [checkin.reservation_code, checkin.first_name, checkin.last_name],
+        detach=True,
+    )
     query = tables.checkins.insert().values(
         reservation_code=checkin.reservation_code,
         first_name=checkin.first_name,
@@ -65,3 +58,44 @@ async def create_checkins(checkin: schema.CheckinCreate):
     )
     last_record_id = await database.execute(query)
     return {**checkin.dict(), "status": DEFAULT_STATUS, "id": last_record_id}
+
+
+@app.get("/checkins/{checkin_id}", response_model=schema.Checkin)
+async def single_checkin(checkin_id: int):
+    async def update_checkin(status: tables.CheckinStatus):
+        query = (
+            tables.checkins.update()
+            .where(tables.checkins.c.id == checkin_id)
+            .values(status=status.value)
+        )
+        await database.fetch_one(query)
+
+    query = tables.checkins.select().where(tables.checkins.c.id == checkin_id)
+    checkin = await database.fetch_one(query)
+
+    if checkin is None:
+        raise HTTPException(status_code=404, detail="Check-in not found")
+
+    container = client.containers.get(checkin["container_id"])
+
+    if checkin["status"] != DEFAULT_STATUS or container.status == "running":
+        return checkin
+
+    if container.status == "exited":
+        logs = container.logs().decode("utf-8")
+        logger.debug(logs)
+        response = {**checkin}
+        status = tables.CheckinStatus.FAILED
+
+        if "Success!" in logs:
+            status = tables.CheckinStatus.COMPLETED
+
+        await update_checkin(status)
+        response["status"] = status.value
+
+        return response
+
+    raise HTTPException(
+        status_code=500,
+        detail="Unexpected error occurred. Please contact Kevin for more details",
+    )
