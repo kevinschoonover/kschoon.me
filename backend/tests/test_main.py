@@ -12,15 +12,26 @@ class MockContainer:
         self.logs = lambda: log_message.encode("utf-8")
 
 
+DEFAULT_RESERVATION_CODE = "AAAAAA"
+DEFAULT_FIRST_NAME = "Kevin"
+DEFAULT_LAST_NAME = "Schoonover"
+
 DEFAULT_STATUS = tables.CheckinStatus.WAITING
 FAILED_STATUS = tables.CheckinStatus.FAILED
 SUCCESS_STATUS = tables.CheckinStatus.COMPLETED
 TEST_CHECKIN = {
-    "first_name": "Kevin",
-    "last_name": "Schoonover",
+    "first_name": DEFAULT_FIRST_NAME,
+    "last_name": DEFAULT_LAST_NAME,
     "status": DEFAULT_STATUS,
-    "reservation_code": "AAAAAA",
+    "reservation_code": DEFAULT_RESERVATION_CODE,
     "container_id": "test",
+    "logs": None,
+}
+
+TEST_CHECKIN_SUBMISSION = {
+    "first_name": DEFAULT_FIRST_NAME,
+    "last_name": DEFAULT_LAST_NAME,
+    "reservation_code": DEFAULT_RESERVATION_CODE,
 }
 
 
@@ -51,9 +62,16 @@ class TestSpecificCheckins:
         test_cases = [
             ("running", "Success!", DEFAULT_STATUS),
             ("running", "Failed!", DEFAULT_STATUS),
-            ("exited", "Success!", SUCCESS_STATUS),
+            ("exited", "Success!", FAILED_STATUS),
             ("exited", "Failed!", FAILED_STATUS),
+            ("exited", "Kevin Schoonover got A5!", SUCCESS_STATUS),
+            (
+                "exited",
+                "Kevin Schoonover got A5!\nKevin Schoonover got B17!",
+                SUCCESS_STATUS,
+            ),
         ]
+
         async with async_client as client:
             for docker_status, log, result_status in test_cases:
                 patch_docker.containers.get.return_value = MockContainer(
@@ -107,27 +125,23 @@ class TestCreatingCheckins:
             }
 
     def test_successful_submission(self, sync_client, database, patch_docker):
-        test_data = {
-            "reservation_code": "AAAAAA",
-            "first_name": "Kevin",
-            "last_name": "Schoonover",
-        }
         patch_docker.containers.run.return_value = MockDockerRun()
 
         with sync_client as client:
-            response = client.post("/checkins/", json=test_data)
+            response = client.post("/checkins/", json=TEST_CHECKIN_SUBMISSION)
 
             assert response.status_code == 200
             response_json = response.json()
             del response_json["id"]
             assert response_json == {
-                **test_data,
+                **TEST_CHECKIN_SUBMISSION,
                 "status": tables.CheckinStatus.WAITING.value,
+                "logs": None,
             }
 
             patch_docker.containers.run.assert_called_with(
                 "pyro2927/southwestcheckin:latest",
-                list(test_data.values()),
+                [DEFAULT_RESERVATION_CODE, DEFAULT_FIRST_NAME, DEFAULT_LAST_NAME],
                 detach=True,
             )
 

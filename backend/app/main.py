@@ -1,4 +1,5 @@
 import os
+import re
 from typing import List
 
 import docker
@@ -8,6 +9,9 @@ from fastapi import FastAPI, HTTPException
 from . import schema, tables
 from .database import database, engine
 from .logger import logger
+
+SUCCESS_REGEX = "(\w+ \w+) got (\w\d+)!"
+success_match = re.compile(SUCCESS_REGEX)
 
 client: docker.client.DockerClient = docker.from_env()
 
@@ -62,11 +66,11 @@ async def create_checkins(checkin: schema.CheckinCreate):
 
 @app.get("/checkins/{checkin_id}", response_model=schema.Checkin)
 async def single_checkin(checkin_id: int):
-    async def update_checkin(status: tables.CheckinStatus):
+    async def update_checkin(status: tables.CheckinStatus, logs: str):
         query = (
             tables.checkins.update()
             .where(tables.checkins.c.id == checkin_id)
-            .values(status=status.value)
+            .values(status=status.value, logs=logs)
         )
         await database.fetch_one(query)
 
@@ -83,14 +87,14 @@ async def single_checkin(checkin_id: int):
 
     if container.status == "exited":
         logs = container.logs().decode("utf-8")
-        logger.debug(logs)
         response = {**checkin}
         status = tables.CheckinStatus.FAILED
+        matches = success_match.findall(logs)
 
-        if "Success!" in logs:
+        if len(matches) > 0:
             status = tables.CheckinStatus.COMPLETED
 
-        await update_checkin(status)
+        await update_checkin(status, logs)
         response["status"] = status.value
 
         return response

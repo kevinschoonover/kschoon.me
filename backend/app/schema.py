@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel
 
 from .tables import CheckinStatus
@@ -15,3 +16,4 @@ class Checkin(BaseModel):
     last_name: str
     reservation_code: str
     status: CheckinStatus
+    logs: Optional[str]
