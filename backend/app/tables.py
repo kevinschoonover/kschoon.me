@@ -20,4 +20,5 @@ checkins: sqlalchemy.Table = sqlalchemy.Table(
     sqlalchemy.Column("reservation_code", sqlalchemy.String),
     sqlalchemy.Column("status", sqlalchemy.Enum(CheckinStatus)),
     sqlalchemy.Column("container_id", sqlalchemy.String),
+    sqlalchemy.Column("logs", sqlalchemy.String, nullable=True),
 )

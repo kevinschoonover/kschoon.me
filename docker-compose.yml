@@ -1,7 +1,7 @@
 ---
 version: "3.0"
 services:
-  traefik: 
+  traefik:
     image: "traefik:v2.1.0"
     command:
       - --entrypoints.web.address=:80
@@ -14,6 +14,8 @@ services:
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+    depends_on:
+      - web
   web:
     build: ./backend/
     restart: unless-stopped
@@ -27,7 +29,7 @@ services:
       - "./backend/:/app/"
       - "/var/run/docker.sock:/var/run/docker.sock"
     labels:
-      - traefik.enable=true 
+      - traefik.enable=true
       - traefik.http.routers.api.rule=Host(`localhost`)
   db:
     image: "postgres:12"
