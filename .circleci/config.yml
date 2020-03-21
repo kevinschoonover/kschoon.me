@@ -2,7 +2,7 @@ version: 2.1
 orbs:
   codecov: codecov/codecov@1.0.5
 jobs:
-  build:
+  test_backend:
     docker:
       - image: circleci/python:3.8.2
       - image: circleci/postgres:12-ram
@@ -15,13 +15,48 @@ jobs:
       - checkout:
           path: ~/kschoon.me
       - restore_cache:
-          keys: 
+          keys:
             - deps1-{{ .Branch }}-{{ checksum "poetry.lock" }}
       - run: poetry install
       - save_cache:
           key: deps1-{{ .Branch }}-{{ checksum "poetry.lock" }}
-          paths: 
+          paths:
             - ~/.cache/pypoetry/virtualenvs
       - run: poetry run pytest --cov-report=xml --cov=app
       - codecov/upload:
           file: ./coverage.xml
+  test_ansible:
+    docker:
+      - image: circleci/python:3.8.2
+    working_directory: ~/kschoon.me/deploy
+    steps:
+      - checkout:
+          path: ~/kschoon.me
+      - restore_cache:
+          keys:
+            - deps1-deploy-{{ checksum "poetry.lock" }}
+      - run: poetry install
+      - save_cache:
+          key: deps1-deploy-{{ checksum "poetry.lock" }}
+          paths:
+            - ~/.cache/pypoetry/virtualenvs
+      - run: poetry run ansible-lint
+
+  test_terraform:
+    docker:
+      - image: hashicorp/terraform:light
+    working_directory: ~/kschoon.me/deploy
+    steps:
+      - checkout:
+          path: ~/kschoon.me
+      - run: terraform init -backend=false
+      - run: ssh-keygen -t rsa -b 4096 -m PEM -f $HOME/.ssh/kschoon-digitalocean -q -N ""
+      - run: terraform validate
+
+workflows:
+  version: 2
+  test_application:
+    jobs:
+      - test_backend
+      - test_ansible
+      - test_terraform
