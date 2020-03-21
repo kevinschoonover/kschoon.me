@@ -9,13 +9,13 @@ from . import schema, tables
 from .database import database, engine
 from .logger import logger
 
-client = docker.from_env()
+client: docker.client.DockerClient = docker.from_env()
 
 tables.metadata.create_all(engine)
 
-DEFAULT_STATUS = tables.CheckinStatus.WAITING
+DEFAULT_STATUS: tables.CheckinStatus = tables.CheckinStatus.WAITING
 
-app = FastAPI(
+app: FastAPI = FastAPI(
     title="Auto Check-in",
     description=(
         "Airline Check-in as a Service for all those times you've had to"

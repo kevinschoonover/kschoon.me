@@ -11,7 +11,7 @@ class CheckinStatus(enum.Enum):
     WAITING = "WAITING"
 
 
-checkins = sqlalchemy.Table(
+checkins: sqlalchemy.Table = sqlalchemy.Table(
     "checkins",
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
