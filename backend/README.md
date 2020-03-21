@@ -65,7 +65,10 @@ be run with the following instructions:
 
 2. Start a postgres database in the background for the tests to connect to:
     ```bash
-    docker run -d -e POSTGRES_PASSWORD=postgres --name db -p 5432:5432 postgres:12
+    docker run -d -e POSTGRES_PASSWORD=postgres \
+               --name db -p 5432:5432 \
+               --tmpfs /var/lib/postgresql/data:rw \
+               postgres:12
     ```
 
     **NOTE:** if you see, something like:
@@ -79,18 +82,23 @@ be run with the following instructions:
     You will need to run remove the already existing docker container and start
     it again as so:
     ```bash
-    docker stop db && docker rm db && docker run -d --name db -p "5432:5432" postgres
+    docker stop db && \
+      docker rm db && \
+      docker run -d -e POSTGRES_PASSWORD=postgres \
+               --name db -p 5432:5432 \
+               --tmpfs /var/lib/postgresql/data:rw \
+               postgres:12
     ```
 
 4. Run the tests:
     ```bash
-    pytest
+    poetry run pytest
     ```
 
     Running in newer versions `>=python3.8`, you will see a lot of
     deprication warnings that can be disabled by running:
     ```bash
-    pytest -p no:warnings
+    poetry run pytest -p no:warnings
     ```
 
 5. When you're done, make sure you turn off and delete the database to prevent
