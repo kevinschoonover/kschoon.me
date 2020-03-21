@@ -4,13 +4,14 @@
     name: "{{ API_USER }}"
     comment: "User responsible for managing the API"
     system: yes
-    groups: 
+    groups:
       - docker
 
 - name: "Clone the kschoon.me repo"
   git:
     repo: "https://github.com/kevinschoonover/kschoon.me.git"
     dest: "{{ API_INSTALLATION_DIR }}"
+    version: "master"
 
 - name: "Update the API installation directory permissions"
   file:
@@ -20,7 +21,7 @@
     recurse: yes
 
 - name: "See if acme file exists"
-  stat: 
+  stat:
     path: "{{ ACME_FILE_PATH }}"
   register: acme_file
 
@@ -38,7 +39,7 @@
 
 - name: "Install the docker python modules"
   pip:
-    name: 
+    name:
       - docker
       - docker-compose
     state: present
