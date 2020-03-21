@@ -95,7 +95,7 @@ async def single_checkin(checkin_id: int):
 
         return response
 
-    raise HTTPException(
+    raise HTTPException(  # pragma: no cover
         status_code=500,
         detail="Unexpected error occurred. Please contact Kevin for more details",
     )
