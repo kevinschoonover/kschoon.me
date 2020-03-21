@@ -24,34 +24,31 @@ class TestSpecificCheckins:
             assert response.status_code == 404
             assert response.json() == {"detail": "Check-in not found"}
 
-
-# Note this must be outside of the class above due to a __aexit__ error that
-# occurrs with the async with context manager. Don't understand why quite yet
-@pytest.mark.asyncio
-async def test_showing_real_checkin(async_client, database):
-    DEFAULT_STATUS = tables.CheckinStatus.WAITING
-    TEST_CHECKIN = {
-        "first_name": "Kevin",
-        "last_name": "Schoonover",
-        "status": DEFAULT_STATUS,
-        "reservation_code": "AAAAAA",
-        "container_id": "test",
-    }
-    async with async_client as client:
-        query = tables.checkins.insert().values(**TEST_CHECKIN)
-        db, _ = database
-        last_record_id = await db.execute(query)
-
-        response = await client.get(f"/checkins/{last_record_id}")
-
-        assert response.status_code == 200
-        assert_json = {
-            **TEST_CHECKIN,
-            "status": DEFAULT_STATUS.value,
-            "id": last_record_id,
+    @pytest.mark.asyncio
+    async def test_showing_real_checkin(self, async_client, database):
+        DEFAULT_STATUS = tables.CheckinStatus.WAITING
+        TEST_CHECKIN = {
+            "first_name": "Kevin",
+            "last_name": "Schoonover",
+            "status": DEFAULT_STATUS,
+            "reservation_code": "AAAAAA",
+            "container_id": "test",
         }
-        del assert_json["container_id"]
-        assert response.json() == assert_json
+        async with async_client as client:
+            query = tables.checkins.insert().values(**TEST_CHECKIN)
+            db, _ = database
+            last_record_id = await db.execute(query)
+
+            response = await client.get(f"/checkins/{last_record_id}")
+
+            assert response.status_code == 200
+            assert_json = {
+                **TEST_CHECKIN,
+                "status": DEFAULT_STATUS.value,
+                "id": last_record_id,
+            }
+            del assert_json["container_id"]
+            assert response.json() == assert_json
 
 
 class TestCreatingCheckins:
