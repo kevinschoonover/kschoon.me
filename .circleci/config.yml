@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.8.2
+      - image: circleci/postgres:9.6.7
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_PASSWORD: postgres
+    working_directory: ~/kschoon.me/backend
+    steps:
+      - checkout:
+          path: ~/kschoon.me
+      - run: pip install -r requirements.txt
+      - run: pip install pytest
+      - restore_cache:
+          key: deps1-{{ .Branch }}-{{ checksum "requirements.txt" }}
+      - run: pytest
