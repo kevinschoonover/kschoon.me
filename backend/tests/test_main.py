@@ -25,7 +25,7 @@ class TestSpecificCheckins:
             assert response.json() == {"detail": "Check-in not found"}
 
     @pytest.mark.asyncio
-    async def test_showing_real_checkin(self, async_client, database):
+    async def test_showing_real_checkin(self, async_client, database, patch_docker):
         DEFAULT_STATUS = tables.CheckinStatus.WAITING
         TEST_CHECKIN = {
             "first_name": "Kevin",
@@ -38,7 +38,6 @@ class TestSpecificCheckins:
             query = tables.checkins.insert().values(**TEST_CHECKIN)
             db, _ = database
             last_record_id = await db.execute(query)
-
             response = await client.get(f"/checkins/{last_record_id}")
 
             assert response.status_code == 200
@@ -101,5 +100,9 @@ class TestCreatingCheckins:
                 "status": tables.CheckinStatus.WAITING.value,
             }
 
-            patch_docker.containers.run.assert_called_with("hello-world", detach=True)
+            patch_docker.containers.run.assert_called_with(
+                "pyro2927/southwestcheckin:latest",
+                list(test_data.values()),
+                detach=True,
+            )
 

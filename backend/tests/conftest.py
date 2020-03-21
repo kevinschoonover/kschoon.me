@@ -10,13 +10,19 @@ from unittest.mock import MagicMock
 
 
 class MockDockerRun:
-    id = "test"
+    id: str = "test"
+
+
+class MockContainer:
+    logs = lambda: b"Success!"
+    status: str = "running"
 
 
 @pytest.fixture
 def patch_docker(monkeypatch):
     mock = MagicMock()
     mock.containers = MagicMock()
+    mock.containers.get.return_value = MockContainer()
     mock.containers.run.return_value = MockDockerRun()
     monkeypatch.setattr("app.main.client", mock)
     return mock
