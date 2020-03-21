@@ -20,6 +20,7 @@ services:
     command: /start-reload.sh
     environment:
       - LOG_LEVEL=debug
+      - POSTGRES_HOST=db
     depends_on:
       - db
     volumes:
@@ -31,9 +32,12 @@ services:
   db:
     image: "postgres:12"
     restart: unless-stopped
+    environment:
+      - LOG_LEVEL=debug
+      - POSTGRES_PASSWORD=postgres
     ports:
       - "5432:5432"
     environment:
-      - POSTGRES_DB=app
-      - POSTGRES_USER=app
-      - POSTGRES_PASSWORD=app
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres

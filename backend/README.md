@@ -54,6 +54,51 @@ poetry install
 
 <!-- USAGE EXAMPLES -->
 ## Usage
+### Testing
+The API has a [pytest](https://docs.pytest.org/en/latest/) test suite that can
+be run with the following instructions:
+
+1. Initialize the poetry environment:
+    ```bash
+    cd app && poetry shell
+    ```
+
+2. Start a postgres database in the background for the tests to connect to:
+    ```bash
+    docker run -d -e POSTGRES_PASSWORD=postgres --name db -p 5432:5432 postgres:12
+    ```
+
+    **NOTE:** if you see, something like:
+    ```
+    docker: Error response from daemon: Conflict. The container name "/db" is
+    already in use by container
+    "6e134e3f18743d0aaf86730452038374354ab6a31430020950649d7bd0b81d4e". You have
+    to remove (or rename) that container to be able to reuse that name.
+    ```
+
+    You will need to run remove the already existing docker container and start
+    it again as so:
+    ```bash
+    docker stop db && docker rm db && docker run -d --name db -p "5432:5432" postgres
+    ```
+
+4. Run the tests:
+    ```bash
+    pytest
+    ```
+
+    Running in newer versions `>=python3.8`, you will see a lot of
+    deprication warnings that can be disabled by running:
+    ```bash
+    pytest -p no:warnings
+    ```
+
+5. When you're done, make sure you turn off and delete the database to prevent
+   the clashes mentioned above:
+   ```
+   docker stop db && docker rm db
+   ```
+
 ### To **start** the entire backend **in development mode**
 1. Change into the root directory of the repository:
     ```

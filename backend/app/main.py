@@ -1,17 +1,19 @@
 import os
-import logging
 from typing import List
 
 import docker
+
 from fastapi import FastAPI, HTTPException
 
 from . import schema, tables
 from .database import database, engine
+from .logger import logger
 
 client = docker.from_env()
-logger = logging.getLogger(__name__)
 
 tables.metadata.create_all(engine)
+
+DEFAULT_STATUS = tables.CheckinStatus.WAITING
 
 app = FastAPI(
     title="Auto Check-in",
@@ -43,7 +45,12 @@ async def all_checkins():
 @app.get("/checkins/{checkin_id}", response_model=schema.Checkin)
 async def single_checkin(checkin_id: int):
     query = tables.checkins.select().where(tables.checkins.c.id == checkin_id)
-    return await database.fetch_one(query)
+    checkin = await database.fetch_one(query)
+
+    if checkin is None:
+        raise HTTPException(status_code=404, detail="Check-in not found")
+
+    return checkin
 
 
 @app.post("/checkins/", response_model=schema.Checkin)
