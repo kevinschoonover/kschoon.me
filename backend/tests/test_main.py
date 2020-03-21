@@ -2,6 +2,28 @@ import pytest
 from app import tables
 
 
+class MockDockerRun:
+    id: str = "test"
+
+
+class MockContainer:
+    def __init__(self, status, log_message):
+        self.status = status
+        self.logs = lambda: log_message.encode("utf-8")
+
+
+DEFAULT_STATUS = tables.CheckinStatus.WAITING
+FAILED_STATUS = tables.CheckinStatus.FAILED
+SUCCESS_STATUS = tables.CheckinStatus.COMPLETED
+TEST_CHECKIN = {
+    "first_name": "Kevin",
+    "last_name": "Schoonover",
+    "status": DEFAULT_STATUS,
+    "reservation_code": "AAAAAA",
+    "container_id": "test",
+}
+
+
 def test_redocs(sync_client, database):
     with sync_client as client:
         response = client.get("/")
@@ -26,28 +48,30 @@ class TestSpecificCheckins:
 
     @pytest.mark.asyncio
     async def test_showing_real_checkin(self, async_client, database, patch_docker):
-        DEFAULT_STATUS = tables.CheckinStatus.WAITING
-        TEST_CHECKIN = {
-            "first_name": "Kevin",
-            "last_name": "Schoonover",
-            "status": DEFAULT_STATUS,
-            "reservation_code": "AAAAAA",
-            "container_id": "test",
-        }
+        test_cases = [
+            ("running", "Success!", DEFAULT_STATUS),
+            ("running", "Failed!", DEFAULT_STATUS),
+            ("exited", "Success!", SUCCESS_STATUS),
+            ("exited", "Failed!", FAILED_STATUS),
+        ]
         async with async_client as client:
-            query = tables.checkins.insert().values(**TEST_CHECKIN)
-            db, _ = database
-            last_record_id = await db.execute(query)
-            response = await client.get(f"/checkins/{last_record_id}")
+            for docker_status, log, result_status in test_cases:
+                patch_docker.containers.get.return_value = MockContainer(
+                    docker_status, log
+                )
+                query = tables.checkins.insert().values(**TEST_CHECKIN)
+                db, _ = database
+                last_record_id = await db.execute(query)
+                response = await client.get(f"/checkins/{last_record_id}")
 
-            assert response.status_code == 200
-            assert_json = {
-                **TEST_CHECKIN,
-                "status": DEFAULT_STATUS.value,
-                "id": last_record_id,
-            }
-            del assert_json["container_id"]
-            assert response.json() == assert_json
+                assert response.status_code == 200
+                assert_json = {
+                    **TEST_CHECKIN,
+                    "status": result_status.value,
+                    "id": last_record_id,
+                }
+                del assert_json["container_id"]
+                assert response.json() == assert_json
 
 
 class TestCreatingCheckins:
@@ -88,6 +112,7 @@ class TestCreatingCheckins:
             "first_name": "Kevin",
             "last_name": "Schoonover",
         }
+        patch_docker.containers.run.return_value = MockDockerRun()
 
         with sync_client as client:
             response = client.post("/checkins/", json=test_data)
