@@ -1,17 +1,14 @@
+import asyncio
 import os
 import re
 from typing import List
 
 import docker
+from fastapi import BackgroundTasks, FastAPI, HTTPException
 
-from fastapi import FastAPI, HTTPException
-
-from . import schema, tables
+from . import helpers, schema, tables
 from .database import database, engine
 from .logger import logger
-
-SUCCESS_REGEX = "(\w+ \w+) got (\w\d+)!"
-success_match = re.compile(SUCCESS_REGEX)
 
 client: docker.client.DockerClient = docker.from_env()
 
@@ -47,7 +44,9 @@ async def all_checkins():
 
 
 @app.post("/checkins/", response_model=schema.Checkin)
-async def create_checkins(checkin: schema.CheckinCreate):
+async def create_checkins(
+    checkin: schema.CheckinCreate, background_tasks: BackgroundTasks
+):
     container = client.containers.run(
         "pyro2927/southwestcheckin:latest",
         [checkin.reservation_code, checkin.first_name, checkin.last_name],
@@ -61,45 +60,18 @@ async def create_checkins(checkin: schema.CheckinCreate):
         container_id=container.id,
     )
     last_record_id = await database.execute(query)
+    background_tasks.add_task(
+        helpers.observe_container, database, last_record_id, container
+    )
     return {**checkin.dict(), "status": DEFAULT_STATUS, "id": last_record_id}
 
 
 @app.get("/checkins/{checkin_id}", response_model=schema.Checkin)
 async def single_checkin(checkin_id: int):
-    async def update_checkin(status: tables.CheckinStatus, logs: str):
-        query = (
-            tables.checkins.update()
-            .where(tables.checkins.c.id == checkin_id)
-            .values(status=status.value, logs=logs)
-        )
-        await database.fetch_one(query)
-
     query = tables.checkins.select().where(tables.checkins.c.id == checkin_id)
     checkin = await database.fetch_one(query)
 
     if checkin is None:
         raise HTTPException(status_code=404, detail="Check-in not found")
 
-    container = client.containers.get(checkin["container_id"])
-
-    if checkin["status"] != DEFAULT_STATUS or container.status == "running":
-        return checkin
-
-    if container.status == "exited":
-        logs = container.logs().decode("utf-8")
-        response = {**checkin}
-        status = tables.CheckinStatus.FAILED
-        matches = success_match.findall(logs)
-
-        if len(matches) > 0:
-            status = tables.CheckinStatus.COMPLETED
-
-        await update_checkin(status, logs)
-        response["status"] = status.value
-
-        return response
-
-    raise HTTPException(  # pragma: no cover
-        status_code=500,
-        detail="Unexpected error occurred. Please contact Kevin for more details",
-    )
+    return checkin
