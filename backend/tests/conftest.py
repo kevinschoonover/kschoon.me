@@ -1,18 +1,22 @@
-import pytest
-from fastapi.testclient import TestClient
-from async_asgi_testclient import TestClient as AsyncTestClient
-
-
-from app.main import app
-from app.database import create_database
-
 from unittest.mock import MagicMock
+
+import databases
+import docker
+import pytest
+from async_asgi_testclient import TestClient as AsyncTestClient
+from fastapi.testclient import TestClient
+
+from app import helpers, tables
+from app.database import create_database
+from app.main import app
 
 
 @pytest.fixture
 def patch_docker(monkeypatch):
     mock = MagicMock()
     mock.containers = MagicMock()
+    mock.reload = MagicMock()
+
     monkeypatch.setattr("app.main.client", mock)
     return mock
 
@@ -21,6 +25,16 @@ def patch_docker(monkeypatch):
 def database(monkeypatch):
     created_db = create_database(force_rollback=True)
     return created_db, monkeypatch.setattr("app.main.database", created_db)
+
+
+# Useful for testing functions that don't require the full application to be
+# running
+@pytest.fixture
+async def connected_db(monkeypatch):
+    created_db = create_database(force_rollback=True)
+    await created_db.connect()
+    yield created_db
+    await created_db.disconnect()
 
 
 @pytest.fixture(scope="module")
