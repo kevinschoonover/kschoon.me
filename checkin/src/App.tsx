@@ -1,14 +1,46 @@
 import React, {useState} from 'react';
 import { useForm } from 'react-hook-form'
 import { useFetch } from "use-http";
+import { ReactSVG} from "react-svg";
 
 import Modal from "react-modal";
 import {config} from "./config";
 import {TableRow, ICheckinEntry } from "./TableRow";
 import {InputGroup} from "./InputGroup";
 
+import AlertTriangle from './icons/alert-triangle.svg';
+
 
 Modal.setAppElement('#root')
+
+interface IBannerProps {
+  shouldDisplay: boolean;
+  setShouldDisplay: React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const Banner: React.SFC<IBannerProps> = (props: IBannerProps) => {
+  const {shouldDisplay, setShouldDisplay} = props;
+  const footerClasses = shouldDisplay ? "h-28" : "hidden h-28"
+  return (
+    <footer className={footerClasses}>
+      <div className="fixed w-screen top-0 px-2 pb-10 sm:px-0 sm:pb-6">
+        <div className="flex items-center justify-between rounded-lg shadow-lg pl-6 pr-4 py-3 bg-red-700 mt-2 sm:mx-8 md:mx-16 lg:mx-32">
+          <div className="flex flex-column items-center">
+            <div className="flex items-center rounded-lg shadow-lg bg-red-900 text-white p-1">
+              <ReactSVG src={AlertTriangle} className="text-white" />
+            </div>
+            <p className="text-gray-200 ml-2 font-medium text-lg">
+              Error: Network Error occurred and we had problems
+            </p>
+          </div>
+          <button onClick={() => setShouldDisplay(false)} type="button" className="flex items-center justify-center px-2 py-1 leading-6 text-3xl text-white hover:opacity-75 focus:outline-none focus:opacity-50">
+            ×
+          </button>
+        </div>
+      </div>
+    </footer>
+  );
+}
 
 const checkins: ICheckinEntry[] = [
   {name: "Kevin Schoonover", reservationCode: "AAAAAA", flightInfo: "TPE -> STL", status: "Completed"},
@@ -17,6 +49,7 @@ const checkins: ICheckinEntry[] = [
 ]
 
 const App: React.SFC = () => {
+  const [isBannerDisplayed, setIsBannerDisplayed] = useState<boolean>(true);
   const { API_URI } = config;
   const options = { // accepts all `fetch` options
     data: []        // default for `data` will be an array instead of undefined
@@ -107,6 +140,7 @@ const App: React.SFC = () => {
           </tbody>
         </table>
       </div>
+      <Banner shouldDisplay={isBannerDisplayed} setShouldDisplay={setIsBannerDisplayed} />
     </div>
   );
 }
