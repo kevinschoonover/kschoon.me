@@ -45,5 +45,9 @@ resource "digitalocean_project" "default" {
   description = "All *.kschoon.me services and infrastructure"
   purpose = "Other"
   environment = terraform.workspace == "production" ? "production" : "development"
-  resources   = [digitalocean_droplet.primary_api.urn, digitalocean_domain.api.urn]
+  resources   = [
+    digitalocean_droplet.primary_api.urn, 
+    digitalocean_domain.api.urn, 
+    digitalocean_domain.traefik.urn
+  ]
 }
