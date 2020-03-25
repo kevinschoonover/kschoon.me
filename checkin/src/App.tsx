@@ -20,16 +20,16 @@ interface IBannerProps {
 
 const Banner: React.SFC<IBannerProps> = (props: IBannerProps) => {
   const {shouldDisplay, setShouldDisplay} = props;
-  const footerClasses = shouldDisplay ? "h-28" : "hidden h-28"
+  const footerClasses = shouldDisplay ? "" : "hidden"
   return (
-    <footer className={footerClasses}>
-      <div className="fixed w-screen top-0 px-2 pb-10 sm:px-0 sm:pb-6">
-        <div className="flex items-center justify-between rounded-lg shadow-lg pl-6 pr-4 py-3 bg-red-700 mt-2 sm:mx-8 md:mx-16 lg:mx-32">
+    <header className={footerClasses}>
+      <div className="fixed w-screen top-0 px-0 sm:px-2 sm:pb-6 xl:px-32">
+        <div className="flex items-center justify-between sm:rounded-lg shadow-lg px-3 py-3 bg-red-700 sm:mt-2 sm:mx-8 md:mx-16 lg:mx-32">
           <div className="flex flex-column items-center">
             <div className="flex items-center rounded-lg shadow-lg bg-red-900 text-white p-1">
               <ReactSVG src={AlertTriangle} className="text-white" />
             </div>
-            <p className="text-gray-200 ml-2 font-medium text-lg">
+            <p className="text-gray-200 ml-2 font-medium text-md sm:text-lg">
               Error: Network Error occurred and we had problems
             </p>
           </div>
@@ -38,7 +38,7 @@ const Banner: React.SFC<IBannerProps> = (props: IBannerProps) => {
           </button>
         </div>
       </div>
-    </footer>
+    </header>
   );
 }
 
@@ -73,6 +73,7 @@ const App: React.SFC = () => {
 
   return (
     <div className="App min-h-screen bg-gray-300 overflow-x-auto">
+      <Banner shouldDisplay={isBannerDisplayed} setShouldDisplay={setIsBannerDisplayed} />
       <Modal
         isOpen={isModalOpen}
         onRequestClose={() => setModalOpen(false)}
@@ -119,7 +120,7 @@ const App: React.SFC = () => {
           </form>
         </div>
       </Modal>
-      <div className="pt-16 px-4 sm:px-8 md:px-16 xl:px-64">
+      <div className="mt-16 px-4 sm:px-8 md:px-16 xl:px-64">
         <header className="pb-4">
           <div id="body" className="flex flex-row items-baseline">
             <h1 className="text-5xl font-bold">Flights</h1>
@@ -140,7 +141,6 @@ const App: React.SFC = () => {
           </tbody>
         </table>
       </div>
-      <Banner shouldDisplay={isBannerDisplayed} setShouldDisplay={setIsBannerDisplayed} />
     </div>
   );
 }
