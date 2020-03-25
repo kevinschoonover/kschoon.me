@@ -116,23 +116,23 @@ workflows:
             - test_backend
             - test_ansible
             - terraform_plan
-          #filters:
-          #  branches:
-          #    only:
-          #      - master
+          filters:
+            branches:
+              only:
+                - master
       - deploy_orchestration:
           requires:
             - hold
           context: kschoon.me-global
-          #filters:
-          #  branches:
-          #    only:
-          #      - master
+          filters:
+            branches:
+              only:
+                - master
       - deploy_configuration:
           requires:
             - deploy_orchestration
           context: kschoon.me-global
-          #filters:
-          #  branches:
-          #    only:
-          #      - master
+          filters:
+            branches:
+              only:
+                - master
