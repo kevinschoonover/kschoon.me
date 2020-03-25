@@ -1,10 +1,21 @@
+terraform {
+  backend "remote" {
+    hostname = "app.terraform.io"
+    organization = "kschoon"
+
+    workspaces {
+      prefix = "kschoonme-"
+    }
+  }
+}
+
 provider "digitalocean" {
   token = var.do_token
 }
 
 resource "digitalocean_ssh_key" "default" {
     name = "kschoon.me SSH Key"
-    public_key = file("~/.ssh/kschoon-digitalocean.pub")
+    public_key = file("./.keys/digitalocean-kschoon.pub")
 }
 
 resource "digitalocean_droplet" "primary_api" {

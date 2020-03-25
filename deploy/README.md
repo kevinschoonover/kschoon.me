@@ -22,6 +22,11 @@ All infrastructure as code (IaC) and instructions used to deploy the
    the DigitalOcean control panel with read AND write permissions. Be sure to
    save this token.
 
+3. Navigate to the `deploy` directory in the repo:
+    ```bash
+    cd ./kschoon.me/deploy
+    ```
+
 3. Copy the `secrets.examples.tfvars` into `secrets.auto.tfvars`:
     ```bash
     cp secrets.examples.tfvars secrets.auto.tfvars
@@ -39,20 +44,38 @@ All infrastructure as code (IaC) and instructions used to deploy the
 
 6. Populate the `digital_ocean.ini` with the appropriate values.
 
-7. Generate a ssh key with the following path `~/.ssh/kschoon-digitalocean`:
+7. (optional) Generate a ssh key with the following path
+   `./.keys/digitalocean-kschoon` (or your own ssh key, but make sure to add it
+   to the terraform file):
     ```bash
-    ssh-keygen -t rsa -b 4096
+    ssh-keygen -t rsa -b 4096 -m PEM -f ./.keys/digitalocean-kschoon
+    ```
+8. (optional) Add this SSH Key to the [CircleCI
+   Project](https://circleci.com/gh/kevinschoonover/kschoon.me/edit#ssh)
+
+9. (optional) Configure the `add_ssh_key` command in the `.circleci/config.yml`
+   to use the appropriate fingerprint
+
+10. (optional) Add the ssh private key to circleci by following 
+    [these instructions](https://circleci.com/docs/2.0/add-ssh-key/#steps)
+
+7. Request access to the [kschoon organization](https://app.terraform.io/app/kschoon/workspaces) 
+   on [Terraform Cloud](https://app.terraform.io)
+
+8. Generate a terraform cloud access token using their CLI:
+    ```bash
+    terraform login
     ```
 
-7. Initialize terraform:
-```bash
-terraform init
-```
+9. Initialize terraform:
+    ```bash
+    terraform init
+    ```
 
-7. Switch to the 'developement' terraform workspace:
-```bash
-terraform workspace select development
-```
+10. Switch to the 'developement' terraform workspace:
+    ```bash
+    terraform workspace select development
+    ```
 
 ## Usage
 To **spin up** infrastructure, simply run:
