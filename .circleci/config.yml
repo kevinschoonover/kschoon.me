@@ -50,7 +50,6 @@ jobs:
       - checkout:
           path: ~/kschoon.me
       - run: terraform init -backend=false
-      - run: ssh-keygen -t rsa -b 4096 -m PEM -f $HOME/.ssh/kschoon-digitalocean -q -N ""
       - run: terraform validate
 
 workflows:
