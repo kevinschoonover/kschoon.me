@@ -40,6 +40,10 @@ const App: React.SFC = () => {
   const { register, handleSubmit, errors } = useForm()
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
 
+  data.sort((a: ICheckinResponse, b: ICheckinResponse) => {
+    return b.id - a.id
+  })
+
   const checkins: ICheckinEntry[] = data.map((value: ICheckinResponse) => {
     return {
       "name": `${value.first_name} ${value.last_name}`,
