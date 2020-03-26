@@ -5,6 +5,7 @@ from typing import List
 
 import docker
 from fastapi import BackgroundTasks, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 
 from . import helpers, schema, tables
 from .database import database, engine
@@ -16,6 +17,16 @@ tables.metadata.create_all(engine)
 
 DEFAULT_STATUS: tables.CheckinStatus = tables.CheckinStatus.WAITING
 
+
+origins = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://localhost:8080",
+    "https://api.kschoon.me",
+    "https://checkin.kschoon.me",
+]
+
+
 app: FastAPI = FastAPI(
     title="Auto Check-in",
     description=(
@@ -24,6 +35,14 @@ app: FastAPI = FastAPI(
     ),
     version="0.1.0",
     redoc_url="/",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
