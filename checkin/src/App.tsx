@@ -127,7 +127,7 @@ const App: React.SFC = () => {
           </form>
         </div>
       </Modal>
-      <div className="mt-16 px-4 sm:px-8 md:px-16 xl:px-64">
+      <div className="my-16 px-4 sm:px-8 md:px-16 xl:px-64">
         <header className="pb-4">
           <div id="body" className="flex flex-row items-baseline">
             <h1 className="text-5xl font-bold">Flights</h1>
