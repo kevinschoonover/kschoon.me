@@ -1,79 +1,82 @@
 import React, {useState} from 'react';
 import { useForm } from 'react-hook-form'
 import { useFetch } from "use-http";
-import { ReactSVG} from "react-svg";
 
 import Modal from "react-modal";
-import {config} from "./config";
-import {TableRow, ICheckinEntry } from "./TableRow";
-import {InputGroup} from "./InputGroup";
-
-import AlertTriangle from './icons/alert-triangle.svg';
-
+import { config } from "./config";
+import { TableRow, ICheckinEntry } from "./TableRow";
+import { InputGroup } from "./InputGroup";
+import { Banner } from "./Banner";
 
 Modal.setAppElement('#root')
 
-interface IBannerProps {
-  shouldDisplay: boolean;
-  setShouldDisplay: React.Dispatch<React.SetStateAction<boolean>>
+
+interface ICheckinResponse {
+  id: number;
+  first_name: string;
+  last_name: string;
+  reservation_code: string;
+  status: string;
+  logs: string;
 }
 
-const Banner: React.SFC<IBannerProps> = (props: IBannerProps) => {
-  const {shouldDisplay, setShouldDisplay} = props;
-  const footerClasses = shouldDisplay ? "" : "hidden"
-  return (
-    <header className={footerClasses}>
-      <div className="fixed w-screen top-0 px-0 sm:px-2 sm:pb-6 xl:px-32">
-        <div className="flex items-center justify-between sm:rounded-lg shadow-lg px-3 py-3 bg-red-700 sm:mt-2 sm:mx-8 md:mx-16 lg:mx-32">
-          <div className="flex flex-column items-center">
-            <div className="flex items-center rounded-lg shadow-lg bg-red-900 text-white p-1">
-              <ReactSVG src={AlertTriangle} className="text-white" />
-            </div>
-            <p className="text-gray-200 ml-2 font-medium text-md sm:text-lg">
-              Error: Network Error occurred and we had problems
-            </p>
-          </div>
-          <button onClick={() => setShouldDisplay(false)} type="button" className="flex items-center justify-center px-2 py-1 leading-6 text-3xl text-white hover:opacity-75 focus:outline-none focus:opacity-50">
-            ×
-          </button>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-const checkins: ICheckinEntry[] = [
-  {name: "Kevin Schoonover", reservationCode: "AAAAAA", flightInfo: "TPE -> STL", status: "Completed"},
-  {name: "Kevin Schoonover", reservationCode: "AAAAAA", flightInfo: "TPE -> STL", status: "Completed"},
-  {name: "Kevin Schoonover", reservationCode: "AAAAAA", flightInfo: "TPE -> STL", status: "Completed"}
-]
+// const LoadingMessage: React.SFC = () => {
+//   return (
+//     <div className="flex align-center text-xl w-full table">
+//       Loading...
+//     </div>
+//   );
+// }
 
 const App: React.SFC = () => {
-  const [isBannerDisplayed, setIsBannerDisplayed] = useState<boolean>(true);
-  const { API_URI } = config;
   const options = { // accepts all `fetch` options
     data: []        // default for `data` will be an array instead of undefined
   }
+  const {CHECKIN_URL} = config;
 
-  const { loading, error, data } = useFetch(`${API_URI}/checkins`, options, []) // onMount (GET by default)
+  const [isBannerDisplayed, setIsBannerDisplayed] = useState<boolean>(false)
+  const [error, setError] = useState<string | undefined>(undefined)
+  const { data } = useFetch(CHECKIN_URL, options, []) // onMount (GET by default)
   const { register, handleSubmit, errors } = useForm()
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
+
+  const checkins: ICheckinEntry[] = data.map((value: ICheckinResponse) => {
+    return {
+      "name": `${value.first_name} ${value.last_name}`,
+      "reservationCode": value.reservation_code,
+      "flightInfo": "Unknown",
+      "status": value.status
+    }
+  })
   const allCheckins = checkins.map((value, index) => <TableRow key={index} {...value} />)
 
-  console.log(loading, error, data);
-
-  const onSubmit = (data: any) => {
-    console.log("onSubmit", data);
-
-    if (Object.keys(errors).length === 0) {
-      setModalOpen(false)
+  const onSubmit = async (data: any) => {
+    if (Object.keys(errors).length > 0) {
+      return
     }
+
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(
+          {
+            "first_name": data.firstName,
+            "last_name": data.lastName,
+            "reservation_code": data.reservationCode
+          }
+        )
+    };
+    const response = await fetch(CHECKIN_URL, requestOptions)
+    if (response.status !== 200) {
+      setError("Unexpected error occurred, please contact Kevin");
+      setIsBannerDisplayed(true);
+    }
+    setModalOpen(false);
   }
-  console.log("errors", errors)
 
   return (
     <div className="App min-h-screen bg-gray-300 overflow-x-auto">
-      <Banner shouldDisplay={isBannerDisplayed} setShouldDisplay={setIsBannerDisplayed} />
+      <Banner error={error} shouldDisplay={isBannerDisplayed} setShouldDisplay={setIsBannerDisplayed} />
       <Modal
         isOpen={isModalOpen}
         onRequestClose={() => setModalOpen(false)}
@@ -120,7 +123,7 @@ const App: React.SFC = () => {
           </form>
         </div>
       </Modal>
-      <div className="mt-16 px-4 sm:px-8 md:px-16 xl:px-64">
+      <div className="m-16 px-4 sm:px-8 md:px-16 xl:px-64">
         <header className="pb-4">
           <div id="body" className="flex flex-row items-baseline">
             <h1 className="text-5xl font-bold">Flights</h1>

@@ -15,7 +15,6 @@ const InputGroup: React.SFC<IInputForm> = (props: IInputForm) => {
   const { label, placeholder, register, name, error } = props
   const BORDER_COLOR: string = error ? "border-red-500" : "border-gray-500"
   const BORDER_STYLE: string = `mt-1 relative rounded-md shadow-sm border-solid border ${BORDER_COLOR} p-2`
-  console.log(name, error)
 
   return (
     <div className="mb-2">
