@@ -25,6 +25,7 @@ jobs:
       - run: poetry run pytest --cov-report=xml --cov=app
       - codecov/upload:
           file: ./coverage.xml
+
   test_ansible:
     docker:
       - image: circleci/python:3.8.2
@@ -45,30 +46,43 @@ jobs:
   test_terraform:
     docker:
       - image: hashicorp/terraform:light
+        environment:
+          TF_WORKSPACE: production
+          TF_IN_AUTOMATION: "1"
+
     working_directory: ~/kschoon.me/deploy
     steps:
       - checkout:
           path: ~/kschoon.me
       - run: terraform init -backend=false
       - run: terraform validate
+
   terraform_plan:
     docker:
       - image: hashicorp/terraform:light
+        environment:
+          TF_WORKSPACE: production
+          TF_IN_AUTOMATION: "1"
+
     working_directory: ~/kschoon.me/deploy
     steps:
       - checkout:
           path: ~/kschoon.me
       - run: echo "credentials \"app.terraform.io\" { token = \"$TF_REGISTRY_TOKEN\" }" >>$HOME/.terraformrc
-      - run: echo 1 | terraform init
-      - run: terraform workspace select production
+      - run: terraform init
       - run: terraform plan -input=false -out=terraform.plan
       - persist_to_workspace:
           root: ~/kschoon.me/deploy/
           paths:
             - terraform.plan
+
   deploy_orchestration:
     docker:
       - image: hashicorp/terraform:light
+        environment:
+          TF_WORKSPACE: production
+          TF_IN_AUTOMATION: "1"
+
     working_directory: ~/kschoon.me/deploy
     steps:
       - checkout:
@@ -76,9 +90,9 @@ jobs:
       - attach_workspace:
           at: ~/kschoon.me/deploy/
       - run: echo "credentials \"app.terraform.io\" { token = \"$TF_REGISTRY_TOKEN\" }" >>$HOME/.terraformrc
-      - run: echo 1 | terraform init
-      - run: terraform workspace select production
+      - run: terraform init
       - run: terraform apply -input=false -auto-approve terraform.plan
+
   deploy_configuration:
     docker:
       - image: circleci/python:3.8.2
