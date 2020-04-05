@@ -4,7 +4,7 @@
 [Request Feature](https://github.com/kevinschoonover/kschoon.me/issues)
 
 Backend API for facilitating all server-side interactions that will include:
-+ Communicating with a [nomad instance](https://nomadproject.io/) to schedule
++ Communicating with a [docker](https://docs.docker.com/) to schedule
   automated airline check-in.
 
 and more.
@@ -28,7 +28,7 @@ To get a local copy up and running follow these simple steps.
 
 ### Prerequisites
 + [Git](https://git-scm.com/download/)
-+ [python](https://www.python.org/downloads/) (>= 3.7)
++ [rust](https://www.rust-lang.org/tools/install)
 + [docker](https://docs.docker.com/)
 + [docker-compose](https://docs.docker.com/compose/install/) (>= 3.0)
 
@@ -46,24 +46,12 @@ git clone git@github.com:kevinschoonover/kschoon.me.git
 cd <YOUR_REPO_NAME>/backend/
 ```
 
-3. Install the necessary dependencies:
-```bash
-pip install poetry
-poetry install
-```
-
-<!-- USAGE EXAMPLES -->
 ## Usage
 ### Testing
 The API has a [pytest](https://docs.pytest.org/en/latest/) test suite that can
 be run with the following instructions:
 
-1. Initialize the poetry environment:
-    ```bash
-    cd app && poetry shell
-    ```
-
-2. Start a postgres database in the background for the tests to connect to:
+1. Start a postgres database in the background for the tests to connect to:
     ```bash
     docker run -d -e POSTGRES_PASSWORD=postgres \
                --name db -p 5432:5432 \
@@ -90,18 +78,17 @@ be run with the following instructions:
                postgres:12
     ```
 
-4. Run the tests:
+2. Create the `.env` file:
     ```bash
-    poetry run pytest
+    echo DATABASE_URL=postgres://postgres:postgres@localhost/postgres > .env
     ```
 
-    Running in newer versions `>=python3.8`, you will see a lot of
-    deprication warnings that can be disabled by running:
+2. Run the tests:
     ```bash
-    poetry run pytest -p no:warnings
+    cargo test
     ```
 
-5. When you're done, make sure you turn off and delete the database to prevent
+3. When you're done, make sure you turn off and delete the database to prevent
    the clashes mentioned above:
    ```
    docker stop db && docker rm db
@@ -120,26 +107,6 @@ be run with the following instructions:
 
 ### To **deploy** a **production-ready version** of the backend
 Checkout the README located in `<GIT_REPO_ROOT>/deploy/`
-
-### To **managed dependencies**
-Use poetry:
-+ To **update**:
-    ```
-    poetry update
-    ```
-+ To **add**:
-    ```
-    poetry add <dependency>
-    ```
-
-But make sure to **update the requirements.txt AFTER applying any change**:
-```
-poetry export -f requirements.txt -o requirements.txt
-```
-
-This is because the docker build currently relies on the requirements.txt and
-not poetry. The may be changed after monitoring 
-[this issue on github](https://github.com/python-poetry/poetry/issues/1301).
 
 <!-- ROADMAP -->
 ## Roadmap

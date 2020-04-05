@@ -1,10 +1,14 @@
-FROM tiangolo/uvicorn-gunicorn-fastapi:python3.7
+FROM rust:1.44
 
-RUN rm /app/main.py
+WORKDIR /usr/src/backend
 
-EXPOSE 80
+RUN cargo install diesel_cli --no-default-features --features postgres
+RUN cargo install cargo-watch
 
-COPY requirements.txt /app/requirements.txt
-RUN pip install -r /app/requirements.txt
+COPY . .
 
-COPY app/ /app/app/
+EXPOSE 8080
+
+VOLUME ["/usr/local/cargo"]
+
+CMD cargo run --release
