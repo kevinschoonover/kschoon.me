@@ -1,11 +1,10 @@
 {
   "compilerOptions": {
-    "incremental": true,
+    "incremental": false,
     "target": "es5",
     "module": "esnext",
     "jsx": "react",
     "outDir": "./build",
-    "tsBuildInfoFile": "./build/.tsbuildinfo",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,

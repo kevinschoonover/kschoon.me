@@ -1,10 +1,10 @@
 ---
-version: "3.0"
+version: "3.5"
 services:
   traefik:
-    image: "traefik:v2.1.0"
+    image: "traefik:v2.2.0"
     command:
-      - --entrypoints.web.address=:80
+      - --entryPoints.web.address=:80/tcp
       - --providers.docker=true
       - --api.insecure
       - --accessLog
@@ -16,21 +16,42 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
     depends_on:
       - web
+      - faktory
   web:
-    build: ./backend/
+    command: bash -c "bash ./wait-for-it.sh db:5432 -q -- diesel setup && cargo watch -x run"
+    build:
+      context: ./backend/
     restart: unless-stopped
-    command: /start-reload.sh
     environment:
       - LOG_LEVEL=debug
       - POSTGRES_HOST=db
     depends_on:
       - db
     volumes:
-      - "./backend/:/app/"
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./backend/:/usr/src/backend/"
     labels:
       - traefik.enable=true
       - traefik.http.routers.api.rule=Host(`localhost`)
+  faktory:
+    image: "contribsys/faktory"
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.jobs.rule=Host(`localhost`) && PathPrefix(`/faktory/`)
+    ports:
+      - "7420:7420"
+      - "7419:7419"
+  faktory_worker:
+    build:
+      context: ./backend/worker/
+      target: development
+    volumes:
+      - "./backend/worker/:/usr/src/worker/"
+      - "./backend/.env:/usr/src/worker/.env"
+    labels:
+      - traefik.enable=false
+    depends_on:
+      - faktory
   db:
     image: "postgres:12"
     restart: unless-stopped

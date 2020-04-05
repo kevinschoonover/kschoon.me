@@ -1,80 +1,69 @@
 import React, {useState} from 'react';
 import { useForm } from 'react-hook-form'
-import { useFetch } from "use-http";
-
 import Modal from "react-modal";
-import { config } from "./config";
+import { useAllCheckinsQuery, useCreateCheckinMutation, AllCheckinsDocument, AllCheckinsQuery }  from "./generated/graphql";
+
 import { TableRow, ICheckinEntry } from "./TableRow";
+
 import { InputGroup } from "./InputGroup";
 import { Banner } from "./Banner";
 
 Modal.setAppElement('#root')
 
-
-interface ICheckinResponse {
-  id: number;
-  first_name: string;
-  last_name: string;
-  reservation_code: string;
-  status: string;
-  logs: string;
+interface ICreateCheckin {
+  firstName: string;
+  lastName: string;
+  reservationCode: string;
 }
 
-// const LoadingMessage: React.SFC = () => {
-//   return (
-//     <div className="flex align-center text-xl w-full table">
-//       Loading...
-//     </div>
-//   );
-// }
+
+const UNEXPECTED_ERROR_MSG = "Unexpected error occurred, please contact Kevin";
 
 const App: React.SFC = () => {
-  const options = { // accepts all `fetch` options
-    data: []        // default for `data` will be an array instead of undefined
-  }
-  const {CHECKIN_URL} = config;
-
   const [isBannerDisplayed, setIsBannerDisplayed] = useState<boolean>(false)
   const [error, setError] = useState<string | undefined>(undefined)
-  const { data } = useFetch(CHECKIN_URL, options, []) // onMount (GET by default)
-  const { register, handleSubmit, errors } = useForm()
+  const { data, error: queryError } = useAllCheckinsQuery();
+  const [createCheckinMutation, { error: mutationError }] = useCreateCheckinMutation(
+    {update: (cache, { data } ) => {
+      const checkins: AllCheckinsQuery | null = cache.readQuery({ query: AllCheckinsDocument });
+      checkins!.allCheckins.edges = checkins?.allCheckins.edges?.concat({"node": {"__typename": "Checkin", ...data!.createCheckin}, "__typename": "CheckinEdge"})
+      cache.writeQuery({
+         query: AllCheckinsDocument,
+         data: checkins
+       });
+    }, onError: () => {
+      console.log("onError");
+      setError(`${UNEXPECTED_ERROR_MSG} with 'MutationError'`);
+    }}
+  );
+
+  const { register, handleSubmit, errors } = useForm<ICreateCheckin>()
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
 
-  data.sort((a: ICheckinResponse, b: ICheckinResponse) => {
-    return b.id - a.id
-  })
+  const checkins: ICheckinEntry[] = data?.allCheckins.edges?.map((value) => {
+      const {node} = value!
+      return {
+        "id": node.id,
+        "name": `${node.firstName} ${node.lastName}`,
+        "reservationCode": node.reservationCode,
+        "flightInfo": "Unknown",
+        "status": node.checkinStatus
+      }
+    }) || []
 
-  const checkins: ICheckinEntry[] = data.map((value: ICheckinResponse) => {
-    return {
-      "name": `${value.first_name} ${value.last_name}`,
-      "reservationCode": value.reservation_code,
-      "flightInfo": "Unknown",
-      "status": value.status
-    }
-  })
-  const allCheckins = checkins.map((value, index) => <TableRow key={index} {...value} />)
+  checkins.sort((a, b) => b.id - a.id)
 
-  const onSubmit = async (data: any) => {
-    if (Object.keys(errors).length > 0) {
-      return
-    }
+  const allCheckins = checkins.map((value) => <TableRow key={value.id} {...value} />)
 
-    const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(
-          {
-            "first_name": data.firstName,
-            "last_name": data.lastName,
-            "reservation_code": data.reservationCode
-          }
-        )
-    };
-    const response = await fetch(CHECKIN_URL, requestOptions)
-    if (response.status !== 200) {
-      setError("Unexpected error occurred, please contact Kevin");
+  if (mutationError || queryError) {
+    if (!isBannerDisplayed) {
+      setError(UNEXPECTED_ERROR_MSG);
       setIsBannerDisplayed(true);
     }
+  }
+
+  const onSubmit = async ({firstName, lastName, reservationCode}: ICreateCheckin) => {
+    createCheckinMutation({ variables: { lastName, firstName, reservationCode} });
     setModalOpen(false);
   }
 

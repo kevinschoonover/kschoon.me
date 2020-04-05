@@ -4,7 +4,7 @@ orbs:
 jobs:
   test_backend:
     docker:
-      - image: circleci/python:3.8.2
+      - image: circleci/rust:1.44
       - image: circleci/postgres:12-ram
         environment:
           POSTGRES_USER: postgres
@@ -14,17 +14,28 @@ jobs:
     steps:
       - checkout:
           path: ~/kschoon.me
+      - run:
+          name: Calculate dependencies
+          command: cargo generate-lockfile
       - restore_cache:
           keys:
-            - deps1-{{ .Branch }}-{{ checksum "poetry.lock" }}
-      - run: poetry install
+            - deps4-{{ .Branch }}-{{ checksum "Cargo.lock" }}
+      - run:
+          name: Install diesel-cli
+          command: CARGO_TARGET_DIR="target/diesel_cli" cargo install diesel_cli --no-default-features --features "postgres"
+      - run: cargo build --all --all-targets
       - save_cache:
-          key: deps1-{{ .Branch }}-{{ checksum "poetry.lock" }}
+          key: deps4-{{ .Branch }}-{{ checksum "Cargo.lock" }}
           paths:
-            - ~/.cache/pypoetry/virtualenvs
-      - run: poetry run pytest --cov-report=xml --cov=app
-      - codecov/upload:
-          file: ./coverage.xml
+            - target/debug/.fingerprint
+            - target/debug/build
+            - target/debug/deps
+            - target/diesel_cli
+      - run: echo DATABASE_URL=postgres://postgres:postgres@localhost/postgres > .env
+      - run:
+          name: Run diesel migrations
+          command: /usr/local/cargo/bin/diesel migration run
+      - run: cargo test
 
   test_ansible:
     docker:

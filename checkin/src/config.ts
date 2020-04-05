@@ -10,7 +10,7 @@ const API_URI =
 
 const config: IConfig = {
   API_URI,
-  CHECKIN_URL: `${API_URI}/checkins/`,
+  CHECKIN_URL: `${API_URI}`,
 };
 
 export { config };

@@ -1,6 +1,7 @@
 import React from "react";
 
 export interface ICheckinEntry {
+  id: number;
   name: string;
   reservationCode: string;
   flightInfo: string;
