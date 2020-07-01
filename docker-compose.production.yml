@@ -25,7 +25,6 @@ services:
       - "./acme.json:/acme.json"
   web:
     build: ./backend/
-    command: /start.sh
     labels:
       - traefik.enable=true
       - traefik.http.routers.api.rule=Host(`api.kschoon.me`)
