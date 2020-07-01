@@ -31,6 +31,8 @@ services:
       - traefik.http.routers.api.rule=Host(`api.kschoon.me`)
       - traefik.http.routers.api.tls=true
       - traefik.http.routers.api.tls.certresolver=tls_resolver
+  db:
+    ports:
   faktory:
     labels:
       - traefik.enable=true
