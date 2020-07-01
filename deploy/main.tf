@@ -40,6 +40,11 @@ resource "digitalocean_domain" "traefik" {
   ip_address = digitalocean_droplet.primary_api.ipv4_address
 }
 
+resource "digitalocean_domain" "faktory" {
+  name       = "faktory.kschoon.me"
+  ip_address = digitalocean_droplet.primary_api.ipv4_address
+}
+
 resource "digitalocean_project" "default" {
   name = terraform.workspace == "production" ? "kschoon.me" : "kschoon.me - dev"
   description = "All *.kschoon.me services and infrastructure"

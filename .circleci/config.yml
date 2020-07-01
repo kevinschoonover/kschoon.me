@@ -118,11 +118,12 @@ jobs:
           keys:
             - deps1-deploy-{{ checksum "poetry.lock" }}
       - run: poetry install
+      - run: echo $ANSIBLE_VAULT_PASSWORD > ~/.vault_pass
       - save_cache:
           key: deps1-deploy-{{ checksum "poetry.lock" }}
           paths:
             - ~/.cache/pypoetry/virtualenvs
-      - run: poetry run ansible-playbook -i digital_ocean.py site.yml
+      - run: poetry run ansible-playbook -i digital_ocean.py site.yml --vault-password-file ~/.vault_pass
 
 workflows:
   version: 2

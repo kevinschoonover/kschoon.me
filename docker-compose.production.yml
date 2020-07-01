@@ -1,5 +1,5 @@
 ---
-version: "3.0"
+version: "3.5"
 services:
   traefik:
     image: "traefik:v2.1.0"
@@ -37,3 +37,7 @@ services:
       - traefik.http.routers.api.rule=Host(`faktory.kschoon.me`)
       - traefik.http.routers.api.tls=true
       - traefik.http.routers.api.tls.certresolver=tls_resolver
+    env_file:
+     - ./.docker/faktory.env
+    environment:
+      - PRODUCTION=true
