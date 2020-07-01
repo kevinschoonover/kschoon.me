@@ -90,5 +90,6 @@ terraform destroy
 
 To **configure provisioned machines**, run:
 ```bash
-ansible-playbook -i digital_ocean.py site.yml
+# --ask-vault-pass requires the vault password stored by Kevin.
+ansible-playbook -i digital_ocean.py site.yml --ask-vault-pass
 ```

@@ -13,6 +13,16 @@
     dest: "{{ API_INSTALLATION_DIR }}"
     version: "master"
 
+- name: "Create the .env file for the backend"
+  template:
+    src: "web.env.j2"
+    dest: "{{ API_INSTALLATION_DIR }}/backend/.env"
+
+- name: "Create the .env file for the faktory container"
+  template:
+    src: "faktory.env.j2"
+    dest: "{{ API_INSTALLATION_DIR }}/.docker/faktory.env"
+
 - name: "Update the API installation directory permissions"
   file:
     path: "{{ API_INSTALLATION_DIR }}"
