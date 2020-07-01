@@ -3,3 +3,5 @@
   hosts: api
   roles:
       - api
+  vars_files:
+    - "group_vars/secrets.yml"
