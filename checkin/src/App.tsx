@@ -8,7 +8,8 @@ import { TableRow, ICheckinEntry } from "./TableRow";
 import { InputGroup } from "./InputGroup";
 import { Banner } from "./Banner";
 
-Modal.setAppElement('#root')
+// TODO: remove
+if (process.env.NODE_ENV !== 'test') Modal.setAppElement('#root')
 
 interface ICreateCheckin {
   firstName: string;
