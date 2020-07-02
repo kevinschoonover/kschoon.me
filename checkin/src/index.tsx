@@ -4,7 +4,6 @@ import './index.css';
 import { ApolloProvider } from '@apollo/react-hooks';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-import { config } from "./config";
 
 import { client } from "./utils/apollo";
 
