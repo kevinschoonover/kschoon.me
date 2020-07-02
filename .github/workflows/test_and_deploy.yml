@@ -80,6 +80,7 @@ jobs:
     env:
       terraform_version: latest
       TF_VAR_do_token: ${{ secrets.DO_ACCESS_TOKEN }}
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_WORKSPACE: production
 
     steps:
@@ -186,6 +187,7 @@ jobs:
     env:
       terraform_version: latest
       TF_VAR_do_token: ${{ secrets.DO_ACCESS_TOKEN }}
+      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_WORKSPACE: production
 
     if: github.ref == 'refs/heads/master'

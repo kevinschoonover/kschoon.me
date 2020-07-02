@@ -22,6 +22,11 @@ All infrastructure as code (IaC) and instructions used to deploy the
    the DigitalOcean control panel with read AND write permissions. Be sure to
    save this token.
 
+2. Generate a new (or reuse an old) cloudflare API token token by navigating to
+   the [API Tokens section](https://dash.cloudflare.com/profile/api-tokens) in
+   profile settings on [cloudflare](https://dash.cloudflare.com/) with the `Zone
+   DNS Edit` and `Zone Zone Edit` permissions.
+   
 3. Navigate to the `deploy` directory in the repo:
     ```bash
     cd ./kschoon.me/deploy
@@ -50,6 +55,14 @@ All infrastructure as code (IaC) and instructions used to deploy the
     ```bash
     ssh-keygen -t rsa -b 4096 -m PEM -f ./.keys/digitalocean-kschoon
     ```
+
+7. (optional) Generate a ssh key with the following path
+   `./.keys/digitalocean-kschoon-dev` (or your own ssh key, but make sure to add it
+   to the terraform file):
+    ```bash
+    ssh-keygen -t rsa -b 4096 -m PEM -f ./.keys/digitalocean-kschoon-dev
+    ```
+
 8. (optional) Add this SSH Key to the [CircleCI
    Project](https://circleci.com/gh/kevinschoonover/kschoon.me/edit#ssh)
 
