@@ -23,8 +23,10 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./acme.json:/acme.json"
+  faktory_worker:
+    image: "kschoonme/faktory-worker:latest"
   web:
-    build: ./backend/
+    image: "kschoonme/backend:latest"
     labels:
       - traefik.enable=true
       - traefik.http.routers.api.rule=Host(`api.kschoon.me`)
