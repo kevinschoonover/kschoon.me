@@ -18,9 +18,7 @@ services:
       - web
       - faktory
   web:
-    command: bash -c "bash ./wait-for-it.sh db:5432 -q -- diesel setup && cargo watch -x run"
-    build:
-      context: ./backend/
+    # Image/build specified in docker-compose.{production, override}.yml
     restart: unless-stopped
     environment:
       - LOG_LEVEL=debug
@@ -42,9 +40,7 @@ services:
       - "7420:7420"
       - "7419:7419"
   faktory_worker:
-    build:
-      context: ./backend/worker/
-      target: development
+    # Image/build specified in docker-compose.{production, override}.yml
     volumes:
       - "./backend/worker/:/usr/src/worker/"
       - "./backend/.env:/usr/src/worker/.env"

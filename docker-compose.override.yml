@@ -4,3 +4,11 @@ services:
   db:
     ports:
       - "5432:5432"
+  web:
+    build:
+      context: ./backend/
+      target: rust-base
+  faktory_worker:
+    build:
+      context: ./backend/worker/
+      target: development

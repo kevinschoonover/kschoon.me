@@ -58,7 +58,7 @@
   vars:
     DOCKER_DIR: "{{ API_INSTALLATION_DIR }}/"
   docker_compose:
-    build: yes
+    pull: yes
     files:
       - docker-compose.yml
       - docker-compose.production.yml

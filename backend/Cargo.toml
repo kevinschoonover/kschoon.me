@@ -5,7 +5,7 @@ authors = ["Kevin Schoonover <schoonoverkevinm@gmail.com>"]
 edition = "2018"
 
 [[bin]]
-name = "server"
+name = "backend"
 path = "src/main.rs"
 
 [dependencies]
