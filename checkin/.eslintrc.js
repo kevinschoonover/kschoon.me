@@ -4,6 +4,8 @@ module.exports = {
     es6: true,
   },
   extends: [
+    'react-app',
+    'plugin:jsx-a11y/recommended',
     'airbnb',
     'prettier',
   ],
@@ -21,6 +23,8 @@ module.exports = {
   },
   plugins: [
     'react',
+    'react-hooks',
+    'jsx-a11y',
     '@typescript-eslint',
   ],
   rules: {
