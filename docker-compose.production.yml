@@ -46,3 +46,5 @@ services:
      - ./.docker/faktory.env
     environment:
       - PRODUCTION=true
+  notifications:
+    image: "kschoonme/notifications:lastest"
