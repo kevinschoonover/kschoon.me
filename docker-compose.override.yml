@@ -12,3 +12,7 @@ services:
     build:
       context: ./backend/worker/
       target: development
+  notifications:
+    build:
+      context: ./notifications/
+      target: development

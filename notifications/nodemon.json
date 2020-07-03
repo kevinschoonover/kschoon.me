@@ -1,0 +1,6 @@
+{
+  "watch": ["src/**/*.ts"],
+  "ignore": ["src/**/*.d.ts", "src/**/*.test.ts", "README"],
+  "ext": "ts",
+  "exec": "yarn build:proto && ts-node -r tsconfig-paths/register src/index.ts"
+}

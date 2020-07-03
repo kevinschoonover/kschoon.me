@@ -48,6 +48,10 @@ services:
       - traefik.enable=false
     depends_on:
       - faktory
+  notifications:
+    # Image/build specified in docker-compose.{production, override}.yml
+    volumes:
+      - "./notifications/:/usr/src/notifications/"
   db:
     image: "postgres:12"
     restart: unless-stopped
