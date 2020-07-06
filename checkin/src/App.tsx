@@ -15,12 +15,15 @@ interface ICreateCheckin {
   firstName: string;
   lastName: string;
   reservationCode: string;
+  checkinDate: string;
 }
 
 
 const UNEXPECTED_ERROR_MSG = "Unexpected error occurred, please contact Kevin";
 
 const App: React.SFC = () => {
+  const INPUT_CLASSES = "form-input block w-full pl-7 pr-12 sm:text-sm sm:leading-5";
+
   const [isBannerDisplayed, setIsBannerDisplayed] = useState<boolean>(false)
   const [error, setError] = useState<string | undefined>(undefined)
   const { data, error: queryError } = useAllCheckinsQuery();
@@ -40,6 +43,32 @@ const App: React.SFC = () => {
 
   const { register, handleSubmit, errors } = useForm<ICreateCheckin>()
   const [isModalOpen, setModalOpen] = useState<boolean>(false);
+
+  const RESERVATION_REGISTER = register(
+    {
+      required: "Reservation Code is required",
+      pattern: {
+        value: /[A-Za-z0-9]{6}/,
+        message: "Invalid Reservation Code structure i.e. AAAAAA"}
+    }
+  );
+
+  const ONE_DAY_IN_MILLISECONDS = 1000 * 60 * 60 * 24 * 7;
+
+  const CHECKIN_DATE_REGISTER = register(
+    {
+      required: "Checkin Date is required",
+      validate: {
+        afterYesterday: (date) => {
+          const todayAtMidnight = new Date().setHours(0, 0, 0, 0);
+          return Date.parse(date) >= todayAtMidnight || "Cannot check out for a flight that already happened";
+        },
+        beforeSevenDays: (date) => {
+          return Date.parse(date) < Date.now() + ONE_DAY_IN_MILLISECONDS * 8 || "You can only check in at most 7 days before your flight."
+        },
+      }
+    }
+  );
 
   const checkins: ICheckinEntry[] = data?.allCheckins.edges?.map((value) => {
       const {node} = value!
@@ -84,24 +113,26 @@ const App: React.SFC = () => {
         <div className="rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
           <header className="text-lg font-bold mb-4">Create a Flight</header>
           <form onSubmit={handleSubmit(onSubmit)}>
-            <InputGroup error={errors.firstName} name="firstName" label="First Name" placeholder="Kevin" register={register({ required: "First Name is Required"})} />
-            <InputGroup error={errors.lastName} name="lastName" label="Last Name" placeholder="Schoonover" register={register({required: "Last Name is Required"})} />
+            <InputGroup error={errors.firstName} label="First Name">
+              <input ref={register({ required: "First Name is Required"})} name="firstName" className={INPUT_CLASSES} placeholder="Kevin" />
+            </InputGroup>
+            <InputGroup error={errors.firstName} label="Last Name">
+              <input ref={register({ required: "Last Name is Required"})} name="lastName" className={INPUT_CLASSES} placeholder="Schoonover" />
+            </InputGroup>
+
             <InputGroup
               error={errors.reservationCode}
-              name="reservationCode"
               label="Reservation Code"
-              placeholder="AAAAAA"
-              register={
-                register(
-                  {
-                    required: "Reservation Code is required",
-                    pattern: {
-                      value: /[A-Za-z0-9]{6}/,
-                      message: "Invalid Reservation Code structure i.e. AAAAAA"}
-                  }
-                )
-              }
-            />
+            >
+              <input ref={RESERVATION_REGISTER} name="reservationCode" className={INPUT_CLASSES} placeholder="AAAAAA" />
+            </InputGroup>
+            <InputGroup
+              error={errors.checkinDate}
+              label="Flight Date"
+            >
+              <input type="date" ref={CHECKIN_DATE_REGISTER} name="checkinDate" className={INPUT_CLASSES} placeholder="2019-02-19" />
+            </InputGroup>
+
             <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <span className="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
                 <button type="submit" className="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-purple-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-purple-500 focus:outline-none focus:border-purple-700 focus:shadow-outline-purple transition ease-in-out duration-150 sm:text-sm sm:leading-5">

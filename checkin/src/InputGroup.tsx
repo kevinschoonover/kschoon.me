@@ -4,15 +4,13 @@ import { FieldError} from 'react-hook-form'
 export type RegisterInputs = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement | null;
 
 export interface IInputForm {
-  name: string;
   label: string;
-  placeholder: string;
-  register: (ref: RegisterInputs) => void;
   error?: FieldError;
+  children: React.ReactNode
 }
 
 const InputGroup: React.SFC<IInputForm> = (props: IInputForm) => {
-  const { label, placeholder, register, name, error } = props
+  const { children, label, error } = props
   const BORDER_COLOR: string = error ? "border-red-500" : "border-gray-500"
   const BORDER_STYLE: string = `mt-1 relative rounded-md shadow-sm border-solid border ${BORDER_COLOR} p-2`
 
@@ -24,7 +22,7 @@ const InputGroup: React.SFC<IInputForm> = (props: IInputForm) => {
         </span>
       </div>
       <div className={BORDER_STYLE}>
-        <input ref={register} name={name} className="form-input block w-full pl-7 pr-12 sm:text-sm sm:leading-5" placeholder={placeholder} />
+        { children }
       </div>
       {error && <span className="leading-5 text-red-500 text-sm">{error.message}</span>}
     </div>
