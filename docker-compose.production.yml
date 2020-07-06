@@ -47,4 +47,4 @@ services:
     environment:
       - PRODUCTION=true
   notifications:
-    image: "kschoonme/notifications:lastest"
+    image: "kschoonme/notifications:latest"
