@@ -15,7 +15,6 @@ interface ICreateCheckin {
   firstName: string;
   lastName: string;
   reservationCode: string;
-  checkinDate: string;
 }
 
 
