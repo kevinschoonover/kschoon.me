@@ -75,7 +75,7 @@ impl Checkin {
             first,
             last,
             |after, before, first, last| async move {
-                let database = ctx.data::<Database>();
+                let database = ctx.data::<Database>()?;
                 let checkin_nodes = database.get_checkins()?;
 
                 // TODO: we probably dont need this generic logic

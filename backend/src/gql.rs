@@ -36,9 +36,9 @@ impl MutationRoot {
         ctx: &Context<'_>,
         new_checkin: models::NewCheckin,
     ) -> FieldResult<models::Checkin> {
-        let database = ctx.data::<Database>();
+        let database = ctx.data::<Database>()?;
         let mut producer = ctx
-            .data::<Arc<Mutex<Producer<TcpStream>>>>()
+            .data::<Arc<Mutex<Producer<TcpStream>>>>()?
             .lock()
             .unwrap();
         let checkin = database.create_checkin(new_checkin)?;
@@ -62,7 +62,7 @@ impl MutationRoot {
         id: i32,
         status: models::CheckinStatusEnum,
     ) -> FieldResult<models::Checkin> {
-        let database = ctx.data::<Database>();
+        let database = ctx.data::<Database>()?;
         Ok(database.update_checkin_status(id, status)?)
     }
 }
