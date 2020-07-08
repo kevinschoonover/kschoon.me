@@ -52,6 +52,8 @@ services:
     # Image/build specified in docker-compose.{production, override}.yml
     volumes:
       - "./notifications/:/usr/src/notifications/"
+    labels:
+      - traefik.enable=false
   db:
     image: "postgres:12"
     restart: unless-stopped

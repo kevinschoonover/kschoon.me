@@ -41,6 +41,7 @@ export type CheckinEdge = {
 
 export enum CheckinStatusEnum {
   Waiting = 'WAITING',
+  Scheduled = 'SCHEDULED',
   Completed = 'COMPLETED',
   Failed = 'FAILED'
 }

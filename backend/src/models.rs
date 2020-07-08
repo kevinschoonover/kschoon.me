@@ -18,6 +18,7 @@ pub struct CheckinStatus;
 #[sql_type = "CheckinStatus"]
 pub enum CheckinStatusEnum {
     WAITING,
+    SCHEDULED,
     COMPLETED,
     FAILED,
 }
@@ -26,6 +27,7 @@ impl ToSql<CheckinStatus, Pg> for CheckinStatusEnum {
     fn to_sql<W: Write>(&self, out: &mut Output<W, Pg>) -> serialize::Result {
         match *self {
             CheckinStatusEnum::WAITING => out.write_all(b"WAITING")?,
+            CheckinStatusEnum::SCHEDULED => out.write_all(b"SCHEDULED")?,
             CheckinStatusEnum::COMPLETED => out.write_all(b"COMPLETED")?,
             CheckinStatusEnum::FAILED => out.write_all(b"FAILED")?,
         }
@@ -37,6 +39,7 @@ impl FromSql<CheckinStatus, Pg> for CheckinStatusEnum {
     fn from_sql(bytes: Option<&[u8]>) -> deserialize::Result<Self> {
         match not_none!(bytes) {
             b"WAITING" => Ok(CheckinStatusEnum::WAITING),
+            b"SCHEDULED" => Ok(CheckinStatusEnum::SCHEDULED),
             b"COMPLETED" => Ok(CheckinStatusEnum::COMPLETED),
             b"FAILED" => Ok(CheckinStatusEnum::FAILED),
             not_implemented => unimplemented!(
@@ -142,6 +145,6 @@ impl Checkin {
 pub struct NewCheckin {
     pub first_name: String,
     pub last_name: String,
-    #[field(validator(and(StringMinLength(length = "6"), StringMaxLength(length = "6"))))]
+    #[field(validator(and(StringMinLength(length = "6"), StringMaxLength(length = "8"))))]
     pub reservation_code: String,
 }
