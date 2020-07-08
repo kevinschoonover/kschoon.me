@@ -36,24 +36,23 @@ impl MutationRoot {
         ctx: &Context<'_>,
         new_checkin: models::NewCheckin,
     ) -> FieldResult<models::Checkin> {
-        let database = ctx.data::<Database>();
+        let database = ctx.data::<Database>()?;
         let mut producer = ctx
-            .data::<Arc<Mutex<Producer<TcpStream>>>>()
+            .data::<Arc<Mutex<Producer<TcpStream>>>>()?
             .lock()
             .unwrap();
         let checkin = database.create_checkin(new_checkin)?;
         let new_checkin = checkin.clone();
-        producer
-            .enqueue(Job::new(
-                "start_checkin",
-                vec![
-                    new_checkin.id.to_string(),
-                    new_checkin.reservation_code,
-                    new_checkin.first_name,
-                    new_checkin.last_name,
-                ],
-            ))
-            .unwrap();
+        let job = Job::new(
+            "schedule_checkin",
+            vec![
+                new_checkin.id.to_string(),
+                new_checkin.reservation_code,
+                new_checkin.first_name,
+                new_checkin.last_name,
+            ],
+        );
+        producer.enqueue(job).unwrap();
         Ok(checkin)
     }
 
@@ -63,7 +62,7 @@ impl MutationRoot {
         id: i32,
         status: models::CheckinStatusEnum,
     ) -> FieldResult<models::Checkin> {
-        let database = ctx.data::<Database>();
+        let database = ctx.data::<Database>()?;
         Ok(database.update_checkin_status(id, status)?)
     }
 }

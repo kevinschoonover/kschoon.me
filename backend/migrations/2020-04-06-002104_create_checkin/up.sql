@@ -1,5 +1,5 @@
 -- Your SQL goes here
-CREATE TYPE CheckinStatus AS ENUM ('FAILED', 'WAITING', 'COMPLETED');
+CREATE TYPE CheckinStatus AS ENUM ('FAILED', 'SCHEDULED', 'WAITING', 'COMPLETED');
 
 CREATE TABLE checkins (
     id SERIAL PRIMARY KEY,

@@ -15,7 +15,6 @@ interface ICreateCheckin {
   firstName: string;
   lastName: string;
   reservationCode: string;
-  checkinDate: string;
 }
 
 
@@ -50,23 +49,6 @@ const App: React.SFC = () => {
       pattern: {
         value: /[A-Za-z0-9]{6}/,
         message: "Invalid Reservation Code structure i.e. AAAAAA"}
-    }
-  );
-
-  const ONE_DAY_IN_MILLISECONDS = 1000 * 60 * 60 * 24 * 7;
-
-  const CHECKIN_DATE_REGISTER = register(
-    {
-      required: "Checkin Date is required",
-      validate: {
-        afterYesterday: (date) => {
-          const todayAtMidnight = new Date().setHours(0, 0, 0, 0);
-          return Date.parse(date) >= todayAtMidnight || "Cannot check out for a flight that already happened";
-        },
-        beforeSevenDays: (date) => {
-          return Date.parse(date) < Date.now() + ONE_DAY_IN_MILLISECONDS * 8 || "You can only check in at most 7 days before your flight."
-        },
-      }
     }
   );
 
@@ -126,13 +108,6 @@ const App: React.SFC = () => {
             >
               <input ref={RESERVATION_REGISTER} name="reservationCode" className={INPUT_CLASSES} placeholder="AAAAAA" />
             </InputGroup>
-            <InputGroup
-              error={errors.checkinDate}
-              label="Flight Date"
-            >
-              <input type="date" ref={CHECKIN_DATE_REGISTER} name="checkinDate" className={INPUT_CLASSES} placeholder="2019-02-19" />
-            </InputGroup>
-
             <div className="px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
               <span className="flex w-full rounded-md shadow-sm sm:ml-3 sm:w-auto">
                 <button type="submit" className="inline-flex justify-center w-full rounded-md border border-transparent px-4 py-2 bg-purple-600 text-base leading-6 font-medium text-white shadow-sm hover:bg-purple-500 focus:outline-none focus:border-purple-700 focus:shadow-outline-purple transition ease-in-out duration-150 sm:text-sm sm:leading-5">
