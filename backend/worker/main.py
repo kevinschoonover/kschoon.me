@@ -12,7 +12,6 @@ import sys
 import time
 
 from faktory import Worker, connection
-from pytz import utc
 from dotenv import load_dotenv
 
 from southwest import Reservation, openflights, errors
@@ -54,8 +53,9 @@ def start_checkin(
             first_name, last_name, checkin_time, reservation_number
         )
     )
-    reservation = lookup_reservation(reservation_number, first_name, last_name)
-    current_time = datetime.utcnow().replace(tzinfo=utc)
+    reservation, _ = lookup_reservation(reservation_number, first_name, last_name)
+    checkin_time = datetime.fromtimestamp(checkin_time, tz=timezone.utc)
+    current_time = datetime.utcnow().replace(tzinfo=timezone.utc)
     # check to see if we need to sleep until 24 hours before flight
     if checkin_time > current_time:
         # calculate duration to sleep
@@ -92,7 +92,7 @@ def lookup_reservation(reservation_number, first_name, last_name, verbose=False)
     body = r.lookup_existing_reservation()
 
     # Get our local current time
-    now = datetime.utcnow().replace(tzinfo=utc)
+    now = datetime.utcnow().replace(tzinfo=timezone.utc)
     tomorrow = now + timedelta(days=1)
 
     flight_times = []
