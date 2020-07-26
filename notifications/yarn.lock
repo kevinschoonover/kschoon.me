@@ -2323,10 +2323,10 @@ kind-of@^6.0.0, kind-of@^6.0.2:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-kschoonme-notifications-pb@^1.2.0:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/kschoonme-notifications-pb/-/kschoonme-notifications-pb-1.2.0.tgz#b628565dbe11fd4ed465a299116d5b072634c930"
-  integrity sha512-WFviwRMdrPyaD8zR88fjVtPjSzE60onPMaS9jonQA7qLC04TwGVztP/dxGYQc9tdG2uHpS/no6ETLCj58xjcAQ==
+kschoonme-notifications-pb@^1.3.1:
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/kschoonme-notifications-pb/-/kschoonme-notifications-pb-1.3.1.tgz#bec10aa6f24bdc31715740ad53fd1a354df16fc3"
+  integrity sha512-u6G0HeaKaLv7mw1MeFRm5nFOIG9SBYCmhsInSVYTT+fAPUslBcuga3vZwPc6kp5Qguy4isbx6RL323r14oA8ZA==
   dependencies:
     "@grpc/grpc-js" "^1.1.1"
     "@grpc/proto-loader" "^0.5.4"
