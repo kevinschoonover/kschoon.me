@@ -2,12 +2,13 @@ import * as grpc from "@grpc/grpc-js";
 
 import twilio from "twilio";
 
-import { config } from "../config";
-import { Response, Payload } from "../proto/notifications_pb";
 import {
+  Response,
+  Payload,
   INotificationsServer,
   NotificationsService,
-} from "../proto/notifications_grpc_pb";
+} from "kschoonme-notifications-pb";
+import { config } from "../config";
 
 const { TWILIO_ACCOUNT_ID, TWILIO_AUTH_TOKEN, TWILIO_NUMBER } = config;
 
