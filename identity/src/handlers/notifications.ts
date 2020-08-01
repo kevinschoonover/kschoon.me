@@ -112,13 +112,48 @@ class IdentityHandler implements IIdentityServer {
     call: grpc.ServerUnaryCall<UserID, UserProfile>,
     callback: grpc.sendUnaryData<UserProfile>
   ): void => {
-    const userId = call.request?.toObject().id;
-    User.findOne(userId).then((user) => {
+    const userIdObject = call.request?.toObject();
+    let findOne;
+    let errorMsg: string;
+
+    if (!userIdObject) {
+      callback(
+        {
+          code: grpc.status.INVALID_ARGUMENT,
+          message: `UserID could not be converted to a object`,
+        },
+        null
+      );
+
+      return;
+    }
+
+    if (userIdObject.id) {
+      const { id } = userIdObject;
+      findOne = User.findOne(userIdObject.id);
+      errorMsg = `Could not find user with ID=${id}`;
+    } else if (userIdObject.email) {
+      const { email } = userIdObject;
+      findOne = User.findOne({ email: userIdObject.email });
+      errorMsg = `Could not find user with email=${email}`;
+    } else {
+      callback(
+        {
+          code: grpc.status.INVALID_ARGUMENT,
+          message: `Neither ID or Email is specified in the input.`,
+        },
+        null
+      );
+
+      return;
+    }
+
+    findOne.then((user) => {
       if (!user) {
         callback(
           {
             code: grpc.status.NOT_FOUND,
-            message: `Could not find user with ID=${userId}`,
+            message: errorMsg,
           },
           null
         );
