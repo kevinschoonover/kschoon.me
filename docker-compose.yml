@@ -18,15 +18,13 @@ services:
       - web
       - faktory
   web:
-    # Image/build specified in docker-compose.{production, override}.yml
+    # Image/build/volumes specified in docker-compose.{production, override}.yml
     restart: unless-stopped
     environment:
       - LOG_LEVEL=debug
       - POSTGRES_HOST=db
     depends_on:
       - db
-    volumes:
-      - "./backend/:/usr/src/backend/"
     labels:
       - traefik.enable=true
       - traefik.http.routers.api.rule=Host(`localhost`)
@@ -40,18 +38,13 @@ services:
       - "7420:7420"
       - "7419:7419"
   faktory_worker:
-    # Image/build specified in docker-compose.{production, override}.yml
-    volumes:
-      - "./backend/worker/:/usr/src/worker/"
-      - "./backend/.env:/usr/src/worker/.env"
+    # Image/build/volmes specified in docker-compose.{production, override}.yml
     labels:
       - traefik.enable=false
     depends_on:
       - faktory
   notifications:
-    # Image/build specified in docker-compose.{production, override}.yml
-    volumes:
-      - "./notifications/:/usr/src/notifications/"
+    # Image/build/volumes specified in docker-compose.{production, override}.yml
     labels:
       - traefik.enable=false
   db:

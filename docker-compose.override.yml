@@ -8,11 +8,18 @@ services:
     build:
       context: ./backend/
       target: rust-base
+    volumes:
+      - "./backend/:/usr/src/backend/"
   faktory_worker:
     build:
       context: ./backend/worker/
       target: development
+    volumes:
+      - "./backend/worker/:/usr/src/worker/"
+      - "./backend/.env:/usr/src/worker/.env"
   notifications:
     build:
       context: ./notifications/
       target: development
+    volumes:
+      - "./notifications/:/usr/src/notifications/"
