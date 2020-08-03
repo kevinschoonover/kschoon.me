@@ -1,14 +1,18 @@
 /* eslint-disable no-console, max-len, camelcase, no-unused-vars */
 import { strict as assert } from "assert";
+
+import { promisify, inspect } from "util";
 import querystring from "querystring";
 import crypto from "crypto";
-import { inspect } from "util";
+
 import bodyParser from "koa-bodyparser";
 import Router from "@koa/router";
-
 import { Provider, errors } from "oidc-provider";
-import { InteractionContext, InteractionState } from "./lib/types";
 
+import { UserID, Result, PasswordlessCode } from "kschoonme-identity-pb";
+
+import { client as grpcClient } from "./lib/grpcClient";
+import { InteractionContext, InteractionState } from "./lib/types";
 import { renderError } from "./lib/renderError";
 import { Account } from "./lib/account";
 
@@ -135,15 +139,27 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
   );
 
   router.post("/interaction/:uid/login", body, async (ctx) => {
-    const {
-      prompt: { name },
-    } = await provider.interactionDetails(ctx.req, ctx.res);
-    let account;
-    ctx.assert(name === "login", 500);
-    try {
-      account = await Account.findByLogin(ctx, ctx.request.body.login);
+    const { uid, params, session, prompt } = await provider.interactionDetails(
+      ctx.req,
+      ctx.res
+    );
+    const path = `/interaction/${uid}/verify`;
+    ctx.assert(prompt.name === "login", 500);
 
-      if (!account) {
+    const client = await provider.Client.find(params.client_id);
+    try {
+      ctx.state.affectedAccount = await Account.findByLogin(
+        ctx,
+        ctx.request.body.login
+      );
+
+      ctx.cookies.set("accountId", ctx.state.affectedAccount.getId(), {
+        path,
+        maxAge: 1000 * 120,
+        sameSite: "strict",
+      });
+
+      if (!ctx.state.affectedAccount) {
         ctx.throw(400, new Error("User not found"));
         return;
       }
@@ -152,12 +168,68 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
       return;
     }
 
-    const result = {
-      select_account: {}, // make sure its skipped by the interaction policy since we just logged in
-      login: {
-        account: account.getId(),
+    const userId = new UserID();
+    userId.setEmail(ctx.request.body.login);
+    const sendPasswordlessCode = promisify<UserID, Result>(
+      grpcClient.sendPasswordlessCode
+    ).bind(grpcClient);
+
+    await sendPasswordlessCode(userId);
+
+    return ctx.render("2fa", {
+      client,
+      uid,
+      params,
+      title: "2fa",
+      session: session ? debug(session) : undefined,
+      dbg: {
+        params: debug(params),
+        prompt: debug(prompt),
       },
-    };
+    });
+  });
+
+  router.post("/interaction/:uid/verify", body, async (ctx) => {
+    const accountId = ctx.cookies.get("accountId");
+    ctx.assert(accountId, 500);
+
+    const {
+      params,
+      prompt: { name },
+    } = await provider.interactionDetails(ctx.req, ctx.res);
+    ctx.assert(name === "login", 500);
+
+    const passwordlessCode = new PasswordlessCode();
+    passwordlessCode.setCode(ctx.request.body?.code);
+    const userId = new UserID();
+    userId.setId(accountId!);
+    passwordlessCode.setUser(userId);
+    const verifyPasswordlessCode = promisify<PasswordlessCode, Result>(
+      grpcClient.verifyPasswordlessCode
+    ).bind(grpcClient);
+
+    const verificationResult = await verifyPasswordlessCode(passwordlessCode);
+    verificationResult.toObject();
+
+    let result;
+
+    if (verificationResult.getCode() === Result.ResponseCode.SUCCESS) {
+      result = {
+        select_account: {}, // make sure its skipped by the interaction policy since we just logged in
+        login: {
+          account: accountId!,
+        },
+      };
+    } else {
+      result = {
+        select_account: {},
+        // an error field used as error code indicating a failure during the interaction
+        error: "invalid_code",
+
+        // an optional description for this error
+        error_description: "Code verification failed. Please retry login.",
+      };
+    }
 
     return provider.interactionFinished(ctx.req, ctx.res, result, {
       mergeWithLastSubmission: false,
