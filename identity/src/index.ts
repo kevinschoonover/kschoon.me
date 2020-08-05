@@ -1,7 +1,7 @@
 import * as grpc from "@grpc/grpc-js";
 
 import { createConnection } from "typeorm";
-import notificationsHandler from "./handlers/notifications";
+import identityHandler from "./handlers/identity";
 
 import { config } from "./config";
 
@@ -12,8 +12,8 @@ async function startServer() {
   const server: grpc.Server = new grpc.Server();
 
   // register all the handler here...
-  server.addService(notificationsHandler.service, {
-    ...notificationsHandler.handler,
+  server.addService(identityHandler.service, {
+    ...identityHandler.handler,
   });
 
   const connection = await createConnection();
