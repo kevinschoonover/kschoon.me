@@ -1,7 +1,7 @@
 /* eslint-disable no-console, max-len, camelcase, no-unused-vars */
 import { strict as assert } from "assert";
 
-import { promisify, inspect } from "util";
+import { inspect } from "util";
 import querystring from "querystring";
 import crypto from "crypto";
 
@@ -11,7 +11,7 @@ import { Provider, errors } from "oidc-provider";
 
 import { UserID, Result, PasswordlessCode } from "kschoonme-identity-pb";
 
-import { client as grpcClient } from "./lib/grpcClient";
+import { verifyPasswordlessCode, sendPasswordlessCode } from "./lib/grpc";
 import { InteractionContext, InteractionState } from "./lib/types";
 import { renderError } from "./lib/renderError";
 import { Account } from "./lib/account";
@@ -144,25 +144,19 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
       ctx.res
     );
     const path = `/interaction/${uid}/verify`;
+    const client = await provider.Client.find(params.client_id);
+
     ctx.assert(prompt.name === "login", 500);
 
-    const client = await provider.Client.find(params.client_id);
     try {
-      ctx.state.affectedAccount = await Account.findByLogin(
-        ctx,
-        ctx.request.body.login
-      );
+      const account = await Account.findByLogin(ctx, ctx.request.body.login);
+      ctx.assert(account, 400, "User not found");
 
-      ctx.cookies.set("accountId", ctx.state.affectedAccount.getId(), {
+      ctx.cookies.set("accountId", account.getId(), {
         path,
         maxAge: 1000 * 120,
         sameSite: "strict",
       });
-
-      if (!ctx.state.affectedAccount) {
-        ctx.throw(400, new Error("User not found"));
-        return;
-      }
     } catch (error) {
       ctx.throw(400, new Error("User not found"));
       return;
@@ -170,9 +164,6 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
 
     const userId = new UserID();
     userId.setEmail(ctx.request.body.login);
-    const sendPasswordlessCode = promisify<UserID, Result>(
-      grpcClient.sendPasswordlessCode
-    ).bind(grpcClient);
 
     await sendPasswordlessCode(userId);
 
@@ -190,13 +181,20 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
   });
 
   router.post("/interaction/:uid/verify", body, async (ctx) => {
-    const accountId = ctx.cookies.get("accountId");
-    ctx.assert(accountId, 500);
-
     const {
+      uid,
       params,
       prompt: { name },
     } = await provider.interactionDetails(ctx.req, ctx.res);
+    const path = `/interaction/${uid}/verify`;
+    const accountId = ctx.cookies.get("accountId");
+    ctx.cookies.set("accountId", "", {
+      path,
+      maxAge: 1000 * 120,
+      sameSite: "strict",
+    });
+
+    ctx.assert(accountId, 500);
     ctx.assert(name === "login", 500);
 
     const passwordlessCode = new PasswordlessCode();
@@ -204,9 +202,6 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
     const userId = new UserID();
     userId.setId(accountId!);
     passwordlessCode.setUser(userId);
-    const verifyPasswordlessCode = promisify<PasswordlessCode, Result>(
-      grpcClient.verifyPasswordlessCode
-    ).bind(grpcClient);
 
     const verificationResult = await verifyPasswordlessCode(passwordlessCode);
     verificationResult.toObject();

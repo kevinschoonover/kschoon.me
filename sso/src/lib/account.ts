@@ -8,12 +8,10 @@ import {
   Provider,
 } from "oidc-provider";
 
-import { promisify } from "util";
-
 import { UserID, UserProfile } from "kschoonme-identity-pb";
 
 import { Context } from "koa";
-import { client } from "./grpcClient";
+import { getUserProfile } from "./grpc";
 
 import { InteractionContext } from "./types";
 
@@ -23,7 +21,7 @@ const logins = new Map();
 export class Account implements IAccount {
   accountId: string;
 
-  profile: any;
+  profile?: any;
 
   constructor(id: string, profile?: any) {
     this.accountId = id;
@@ -99,23 +97,16 @@ export class Account implements IAccount {
   ): Promise<UserProfile> {
     const userID: UserID = new UserID();
     userID.setEmail(login);
-    const getUserProfile = promisify<UserID, UserProfile>(
-      client.getUserProfile
-    ).bind(client);
 
     const profile = await getUserProfile(userID);
     return profile;
   }
 
   static findAccount: FindAccount = async (ctx, id, token?) => {
-    // const userID: UserID = new UserID();
-    // userID.setId(id);
-    // const getUserProfile = promisify<UserID, UserProfile>(
-    //   client.getUserProfile
-    // ).bind(client);
+    const userID: UserID = new UserID();
+    userID.setId(id);
+    const account = getUserProfile(userID);
 
-    // const account = getUserProfile(userID);
-
-    return new Account(id);
+    return new Account(id, await account);
   };
 }
