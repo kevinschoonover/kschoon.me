@@ -4,8 +4,8 @@ import * as grpc from "@grpc/grpc-js";
 
 import {
   NotificationsClient,
-  Payload,
-  Response,
+  NotificationRequest,
+  NotificationResult,
 } from "kschoonme-notifications-pb";
 
 export const notificationsClient = new NotificationsClient(
@@ -13,7 +13,7 @@ export const notificationsClient = new NotificationsClient(
   grpc.credentials.createInsecure()
 );
 
-export const sendText = promisify<Payload, Response>(
+export const sendText = promisify<NotificationRequest, NotificationResult>(
   notificationsClient.sendText
 ).bind(notificationsClient);
 

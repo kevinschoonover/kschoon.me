@@ -6,7 +6,7 @@ import {
   IdentityClient,
   PasswordlessCode,
   UserID,
-  Result,
+  PasswordlessResult,
   UserProfile,
 } from "kschoonme-identity-pb";
 
@@ -15,15 +15,15 @@ export const client = new IdentityClient(
   grpc.credentials.createInsecure()
 );
 
-export const sendPasswordlessCode = promisify<UserID, Result>(
+export const sendPasswordlessCode = promisify<UserID, PasswordlessResult>(
   client.sendPasswordlessCode
 ).bind(client);
 
-export const verifyPasswordlessCode = promisify<PasswordlessCode, Result>(
-  client.verifyPasswordlessCode
-).bind(client);
+export const verifyPasswordlessCode = promisify<
+  PasswordlessCode,
+  PasswordlessResult
+>(client.verifyPasswordlessCode).bind(client);
 
 export const getUserProfile = promisify<UserID, UserProfile>(
   client.getUserProfile
 ).bind(client);
-

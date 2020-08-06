@@ -12,11 +12,14 @@ import {
   IIdentityServer,
   IdentityService,
   PasswordlessCode,
-  Result,
+  PasswordlessResult,
 } from "kschoonme-identity-pb";
 
 import { sendText } from "src/lib/grpc";
-import { Payload, Response } from "kschoonme-notifications-pb";
+import {
+  NotificationRequest,
+  NotificationResult,
+} from "kschoonme-notifications-pb";
 import { NotFoundError, InvalidArgumentError } from "../errors";
 import { User } from "../resources/User";
 import { PG_UNIQUE_CONSTRAINT_VIOLATION } from "../consts";
@@ -63,8 +66,8 @@ function createUserProfile(user: User): UserProfile {
 
 class IdentityHandler implements IIdentityServer {
   sendPasswordlessCode = async (
-    call: grpc.ServerUnaryCall<UserID, Result>,
-    callback: grpc.sendUnaryData<Result>
+    call: grpc.ServerUnaryCall<UserID, PasswordlessResult>,
+    callback: grpc.sendUnaryData<PasswordlessResult>
   ): Promise<void> => {
     if (!call.request) {
       callback(
@@ -79,13 +82,13 @@ class IdentityHandler implements IIdentityServer {
 
     try {
       const user = await findUser(call.request);
-      const payload: Payload = new Payload();
-      payload.setNumber(user.phoneNumber);
-      payload.setBody(authenticator.generate(user.totpSecret));
-      await sendText(payload);
+      const request: NotificationRequest = new NotificationRequest();
+      request.setNumber(user.phoneNumber);
+      request.setBody(authenticator.generate(user.totpSecret));
+      await sendText(request);
 
-      const result: Result = new Result();
-      result.setCode(Result.ResponseCode.SUCCESS);
+      const result: PasswordlessResult = new PasswordlessResult();
+      result.setCode(PasswordlessResult.ResponseCode.SUCCESS);
       callback(null, result);
     } catch (err) {
       callback(
@@ -102,8 +105,8 @@ class IdentityHandler implements IIdentityServer {
   };
 
   verifyPasswordlessCode = async (
-    call: grpc.ServerUnaryCall<PasswordlessCode, Result>,
-    callback: grpc.sendUnaryData<Result>
+    call: grpc.ServerUnaryCall<PasswordlessCode, PasswordlessResult>,
+    callback: grpc.sendUnaryData<PasswordlessResult>
   ): Promise<void> => {
     if (!call.request || !call.request?.getUser()) {
       callback(
@@ -123,11 +126,11 @@ class IdentityHandler implements IIdentityServer {
         secret: user.totpSecret,
       });
 
-      const result: Result = new Result();
+      const result: PasswordlessResult = new PasswordlessResult();
       result.setCode(
         isVerified
-          ? Result.ResponseCode.SUCCESS
-          : Result.ResponseCode.VERIFICATION_ERROR
+          ? PasswordlessResult.ResponseCode.SUCCESS
+          : PasswordlessResult.ResponseCode.VERIFICATION_ERROR
       );
       callback(null, result);
     } catch (err) {
