@@ -9,7 +9,11 @@ import bodyParser from "koa-bodyparser";
 import Router from "@koa/router";
 import { Provider, errors } from "oidc-provider";
 
-import { UserID, Result, PasswordlessCode } from "kschoonme-identity-pb";
+import {
+  UserID,
+  PasswordlessResult,
+  PasswordlessCode,
+} from "kschoonme-identity-pb";
 
 import { verifyPasswordlessCode, sendPasswordlessCode } from "./lib/grpc";
 import { InteractionContext, InteractionState } from "./lib/types";
@@ -208,7 +212,9 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
 
     let result;
 
-    if (verificationResult.getCode() === Result.ResponseCode.SUCCESS) {
+    if (
+      verificationResult.getCode() === PasswordlessResult.ResponseCode.SUCCESS
+    ) {
       result = {
         select_account: {}, // make sure its skipped by the interaction policy since we just logged in
         login: {
