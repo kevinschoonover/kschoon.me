@@ -15,10 +15,12 @@ import {
   PasswordlessCode,
 } from "kschoonme-identity-pb";
 
+import { config } from "./config";
 import { verifyPasswordlessCode, sendPasswordlessCode } from "./lib/grpc";
 import { InteractionContext, InteractionState } from "./lib/types";
-import { renderError } from "./lib/renderError";
+import { renderError } from "./helpers/renderError";
 import { Account } from "./lib/account";
+import { decrementRetries } from "./lib/retry";
 
 const keys = new Set();
 const debug = (obj: any) =>
@@ -65,43 +67,6 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
     const client = await provider.Client.find(params.client_id);
 
     switch (prompt.name) {
-      case "select_account": {
-        if (!session) {
-          return provider.interactionFinished(
-            ctx.req,
-            ctx.res,
-            {
-              select_account: {},
-            },
-            { mergeWithLastSubmission: false }
-          );
-        }
-
-        const account = await provider.Account.findAccount(
-          ctx as any,
-          session.accountId as string
-        );
-        const { email } = await account.claims(
-          "prompt",
-          "email",
-          { email: null },
-          []
-        );
-
-        return ctx.render("select_account", {
-          client,
-          uid,
-          email,
-          details: prompt.details,
-          params,
-          title: "Sign-in",
-          session: session ? debug(session) : undefined,
-          dbg: {
-            params: debug(params),
-            prompt: debug(prompt),
-          },
-        });
-      }
       case "login": {
         return ctx.render("login", {
           client,
@@ -111,6 +76,9 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
           title: "Sign-in",
           google: ctx.google,
           session: session ? debug(session) : undefined,
+          error: null,
+          email: null,
+          IS_PRODUCTION: config.IS_PRODUCTION,
           dbg: {
             params: debug(params),
             prompt: debug(prompt),
@@ -138,10 +106,6 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
 
   const body = bodyParser();
 
-  router.get("/interaction/callback/google", (ctx) =>
-    ctx.render("repost", { provider: "google", layout: false })
-  );
-
   router.post("/interaction/:uid/login", body, async (ctx) => {
     const { uid, params, session, prompt } = await provider.interactionDetails(
       ctx.req,
@@ -154,7 +118,10 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
 
     try {
       const account = await Account.findByLogin(ctx, ctx.request.body.login);
-      ctx.assert(account, 400, "User not found");
+
+      if (!account) {
+        throw new Error("User not found");
+      }
 
       ctx.cookies.set("accountId", account.getId(), {
         path,
@@ -162,8 +129,22 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
         sameSite: "strict",
       });
     } catch (error) {
-      ctx.throw(400, new Error("User not found"));
-      return;
+      return ctx.render("login", {
+        client,
+        uid,
+        details: prompt.details,
+        params,
+        title: "Sign-in",
+        google: ctx.google,
+        session: session ? debug(session) : undefined,
+        email: ctx.request.body.login,
+        error: "User was not found. Did you spell it right?",
+        IS_PRODUCTION: config.IS_PRODUCTION,
+        dbg: {
+          params: debug(params),
+          prompt: debug(prompt),
+        },
+      });
     }
 
     const userId = new UserID();
@@ -175,8 +156,11 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
       client,
       uid,
       params,
-      title: "2fa",
+      title: "Sign-in",
+      error: null,
+      code: null,
       session: session ? debug(session) : undefined,
+      IS_PRODUCTION: config.IS_PRODUCTION,
       dbg: {
         params: debug(params),
         prompt: debug(prompt),
@@ -186,17 +170,16 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
 
   router.post("/interaction/:uid/verify", body, async (ctx) => {
     const {
+      session,
       uid,
       params,
+      prompt,
       prompt: { name },
     } = await provider.interactionDetails(ctx.req, ctx.res);
+    const client = await provider.Client.find(params.client_id);
+
     const path = `/interaction/${uid}/verify`;
     const accountId = ctx.cookies.get("accountId");
-    ctx.cookies.set("accountId", "", {
-      path,
-      maxAge: 1000 * 120,
-      sameSite: "strict",
-    });
 
     ctx.assert(accountId, 500);
     ctx.assert(name === "login", 500);
@@ -222,131 +205,44 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
         },
       };
     } else {
-      result = {
-        select_account: {},
-        // an error field used as error code indicating a failure during the interaction
-        error: "invalid_code",
+      try {
+        decrementRetries(ctx, uid);
 
-        // an optional description for this error
-        error_description: "Code verification failed. Please retry login.",
-      };
-    }
-
-    return provider.interactionFinished(ctx.req, ctx.res, result, {
-      mergeWithLastSubmission: false,
-    });
-  });
-
-  router.post("/interaction/:uid/federated", body, async (ctx) => {
-    const {
-      prompt: { name },
-    } = await provider.interactionDetails(ctx.req, ctx.res);
-    assert.equal(name, "login");
-
-    const path = `/interaction/${ctx.params.uid}/federated`;
-
-    switch (ctx.request.body.provider) {
-      case "google": {
-        const callbackParams = ctx.google.callbackParams(ctx.req);
-
-        // init
-        if (!Object.keys(callbackParams).length) {
-          const state = `${ctx.params.uid}|${crypto
-            .randomBytes(32)
-            .toString("hex")}`;
-          const nonce = crypto.randomBytes(32).toString("hex");
-
-          ctx.cookies.set("google.state", state, { path, sameSite: "strict" });
-          ctx.cookies.set("google.nonce", nonce, { path, sameSite: "strict" });
-
-          return ctx.redirect(
-            ctx.google.authorizationUrl({
-              state,
-              nonce,
-              scope: "openid email profile",
-            })
-          );
-        }
-
-        // callback
-        const state = ctx.cookies.get("google.state");
-        ctx.cookies.set("google.state", "", { path });
-        const nonce = ctx.cookies.get("google.nonce");
-        ctx.cookies.set("google.nonce", "", { path });
-
-        const tokenset = await ctx.google.callback(undefined, callbackParams, {
-          state,
-          nonce,
-          response_type: "id_token",
-        });
-        const account = await Account.findByFederated(
-          "google",
-          tokenset.claims()
-        );
-
-        const result = {
-          select_account: {}, // make sure its skipped by the interaction policy since we just logged in
-          login: {
-            account: account.accountId,
+        return ctx.render("2fa", {
+          client,
+          uid,
+          params,
+          title: "2fa",
+          error: "Could not verify code. Is it typed correctly?",
+          code: ctx.request.body?.code,
+          session: session ? debug(session) : undefined,
+          IS_PRODUCTION: config.IS_PRODUCTION,
+          dbg: {
+            params: debug(params),
+            prompt: debug(prompt),
           },
-        };
-        return provider.interactionFinished(ctx.req, ctx.res, result, {
-          mergeWithLastSubmission: false,
         });
-      }
-      default:
-        return undefined;
-    }
-  });
+      } catch (err) {
+        result = {
+          select_account: {},
+          // an error field used as error code indicating a failure during the interaction
+          error: "invalid_code",
 
-  router.post("/interaction/:uid/continue", body, async (ctx) => {
-    const interaction = await provider.interactionDetails(ctx.req, ctx.res);
-    const {
-      prompt: { name, details },
-    } = interaction;
-    assert.equal(name, "select_account");
-
-    if (ctx.request.body.switch) {
-      if (interaction.params.prompt) {
-        const prompts = new Set(interaction.params.prompt.split(" "));
-        prompts.add("login");
-        interaction.params.prompt = [...prompts].join(" ");
-      } else {
-        interaction.params.prompt = "login";
+          // an optional description for this error
+          error_description:
+            "Code verification failed after 3 retries. Please retry login.",
+        };
       }
-      await interaction.save();
     }
 
-    const result = { select_account: {} };
+    ctx.cookies.set("accountId", "", {
+      path,
+      maxAge: 1000 * 120,
+      sameSite: "strict",
+    });
+
     return provider.interactionFinished(ctx.req, ctx.res, result, {
       mergeWithLastSubmission: false,
-    });
-  });
-
-  router.post("/interaction/:uid/confirm", body, async (ctx) => {
-    const {
-      prompt: { name, details },
-    } = await provider.interactionDetails(ctx.req, ctx.res);
-    assert.equal(name, "consent");
-
-    const consent: any = {};
-
-    // any scopes you do not wish to grant go in here
-    //   otherwise details.scopes.new.concat(details.scopes.accepted) will be granted
-    consent.rejectedScopes = [];
-
-    // any claims you do not wish to grant go in here
-    //   otherwise all claims mapped to granted scopes
-    //   and details.claims.new.concat(details.claims.accepted) will be granted
-    consent.rejectedClaims = [];
-
-    // replace = false means previously rejected scopes and claims remain rejected
-    // changing this to true will remove those rejections in favour of just what you rejected above
-    consent.replace = false;
-
-    const result = { consent };
-    return provider.interactionFinished(ctx.req, ctx.res, result, {
-      mergeWithLastSubmission: true,
     });
   });
 

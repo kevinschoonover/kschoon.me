@@ -1,5 +1,6 @@
 import { interactionPolicy, Configuration } from "oidc-provider";
 import { JSONWebKeySet } from "jose";
+import { renderError } from "../helpers/renderError";
 
 import jwks from "../jwks.json";
 
@@ -60,4 +61,5 @@ export const config: Configuration = {
     DeviceCode: 10 * 60, // 10 minutes in seconds
     RefreshToken: 1 * 24 * 60 * 60, // 1 day in seconds
   },
+  renderError,
 };

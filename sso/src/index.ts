@@ -5,12 +5,16 @@ import helmet from "koa-helmet";
 import render from "koa-ejs";
 import { Server } from "http";
 
+import serve from "koa-static";
+import ratelimit from "koa-ratelimit";
 import { config } from "./config";
 import { config as oidcConfig } from "./lib/oidcConfig";
 import { Account } from "./lib/account";
 import { routes } from "./routes";
 
 const { ISSUER, PORT } = config;
+
+const db = new Map();
 
 oidcConfig.findAccount = Account.findAccount;
 
@@ -26,6 +30,23 @@ let server: Server;
   const provider = new Provider(ISSUER, { adapter, ...oidcConfig });
 
   provider.use(helmet());
+  provider.use(serve(`${__dirname}/public`));
+  provider.use(
+    ratelimit({
+      driver: "memory",
+      db,
+      duration: 60000,
+      errorMessage: "Sometimes You Just Have to Slow Down.",
+      id: (ctx) => ctx.ip,
+      headers: {
+        remaining: "Rate-Limit-Remaining",
+        reset: "Rate-Limit-Reset",
+        total: "Rate-Limit-Total",
+      },
+      max: 100,
+      disableHeader: false,
+    })
+  );
 
   if (process.env.NODE_ENV === "production") {
     provider.proxy = true;
