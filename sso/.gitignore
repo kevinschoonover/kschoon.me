@@ -118,3 +118,6 @@ dist
 
 # JSON Web Keys
 jwks.json
+
+# Generated CSS file
+src/public/main.css

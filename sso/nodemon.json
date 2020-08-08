@@ -2,5 +2,5 @@
   "watch": ["src/**/*.ts"],
   "ignore": ["src/**/*.d.ts", "src/**/*.test.ts", "README"],
   "ext": "ts",
-  "exec": "ts-node -r tsconfig-paths/register src/index.ts"
+  "exec": "yarn build:css && ts-node -r tsconfig-paths/register src/index.ts"
 }

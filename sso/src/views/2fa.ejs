@@ -1,5 +1,25 @@
-<form autocomplete="off" action="/interaction/<%= uid %>/verify" method="post">
-  <input required type="text" name="code" placeholder="Enter any code" />
+<h1 class="text-lg">Please enter code we texted you</h1>
 
-  <button type="submit" class="login login-submit">Sign-in</button>
+<form class="flex flex-col pt-4" autocomplete="off" action="/interaction/<%= uid %>/verify" method="post">
+  <div class="mb-2">
+    <label for="code" class="block text-sm leading-5 font-medium
+    text-gray-700">Code</label>
+    <div class="mt-1 relative rounded-md shadow-sm border-solid border
+    border-grey-500 px-4 py-2">
+      <input required type="text" name="code" id="code" class="form-input
+      block w-full sm:leading-5 text-gray-800" placeholder="000000" <% if (!params.login_hint) { %>autofocus="on"<% } else { %> value="<%= params.login_hint %>" <% } %>
+      <% if (!code) { %>value=""<% } else { %> value="<%= code %>" <% } %>>
+    </div>
+  <% if (error) { %><span class="leading-5 text-red-500 text-sm"><%= error %></span><% } %>
+  </div>
+
+  <span class="flex w-full rounded-md shadow-sm sm:w-auto mt-6">
+    <button type="submit" class="inline-flex justify-center w-full rounded-md
+    border border-transparent px-4 py-2 bg-indigo-600 text-large leading-6
+    font-medium text-white shadow-sm hover:bg-indigo-500 focus:outline-none
+    focus:border-indigo-700 focus:shadow-outline-indigo transition ease-in-out
+    duration-150 sm:text-base sm:leading-5">
+      Sign in
+    </button>
+  </span>
 </form>
