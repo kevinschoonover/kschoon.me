@@ -48,5 +48,13 @@ services:
      - ./.docker/faktory.env
     environment:
       - PRODUCTION=true
+  redis:
+    command: redis-server --appendonly yes
+    volumes:
+      - "./redis-data/:/data"
+  identity:
+    image: "kschoonme/identity:latest"
+  sso:
+    image: "kschoonme/sso:latest"
   notifications:
     image: "kschoonme/notifications:latest"

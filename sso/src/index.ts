@@ -3,18 +3,18 @@ import path from "path";
 import { Provider } from "oidc-provider";
 import helmet from "koa-helmet";
 import render from "koa-ejs";
+import Redis from "ioredis";
 import { Server } from "http";
-
 import serve from "koa-static";
 import ratelimit from "koa-ratelimit";
+
 import { config } from "./config";
 import { config as oidcConfig } from "./lib/oidcConfig";
 import { Account } from "./lib/account";
 import { routes } from "./routes";
+import { RedisAdapter } from "./lib/redis";
 
 const { ISSUER, PORT } = config;
-
-const db = new Map();
 
 oidcConfig.findAccount = Account.findAccount;
 
@@ -22,10 +22,11 @@ let server: Server;
 
 (async () => {
   let adapter;
-  // if (process.env.MONGODB_URI) {
-  //   adapter = require("./adapters/mongodb"); // eslint-disable-line global-require
-  //   await adapter.connect();
-  // }
+  let db: Redis.Redis | Map<any, any> = new Map();
+  if (config.USE_REDIS) {
+    adapter = RedisAdapter;
+    db = new Redis(config.REDIS_URL);
+  }
 
   const provider = new Provider(ISSUER, { adapter, ...oidcConfig });
 
@@ -33,7 +34,7 @@ let server: Server;
   provider.use(serve(`${__dirname}/public`));
   provider.use(
     ratelimit({
-      driver: "memory",
+      driver: config.USE_REDIS ? "redis" : "memory",
       db,
       duration: 60000,
       errorMessage: "Sometimes You Just Have to Slow Down.",
@@ -48,7 +49,7 @@ let server: Server;
     })
   );
 
-  if (process.env.NODE_ENV === "production") {
+  if (config.IS_PRODUCTION) {
     provider.proxy = true;
     oidcConfig!.cookies!.short!.secure = true;
     oidcConfig!.cookies!.long!.secure = true;
