@@ -27,16 +27,18 @@ services:
       - db
     labels:
       - traefik.enable=true
-      - traefik.http.routers.api.rule=Host(`localhost`)
+      - traefik.http.routers.api.rule=Host(`lvh.me`)
   faktory:
     image: "contribsys/faktory"
     restart: unless-stopped
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.jobs.rule=Host(`localhost`) && PathPrefix(`/faktory/`)
     ports:
       - "7420:7420"
       - "7419:7419"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.jobs.rule=Host(`faktory.lvh.me`)
+      - traefik.http.services.jobs.loadbalancer.server.port=7420
+
   faktory_worker:
     # Image/build/volmes specified in docker-compose.{production, override}.yml
     labels:
@@ -47,6 +49,30 @@ services:
     # Image/build/volumes specified in docker-compose.{production, override}.yml
     labels:
       - traefik.enable=false
+  identity:
+    # Image/build/volumes specified in docker-compose.{production, override}.yml
+    labels:
+      - traefik.enable=false
+    environment:
+      - POSTGRES_URL="postgres://postgres:postgres@db:5432"
+    depends_on:
+      - db
+  sso:
+    # Image/build/volumes specified in docker-compose.{production, override}.yml
+    restart: unless-stopped
+    environment:
+      - USE_REDIS=true
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.sso.rule=Host(`sso.lvh.me`)
+      - traefik.http.services.sso.loadbalancer.server.port=3000
+
+  redis:
+    # command and volume is overridden in docker-compose.production.yml
+    image: "redis:6-alpine"
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
   db:
     image: "postgres:12"
     restart: unless-stopped

@@ -32,8 +32,8 @@
     "typescript": "^3.9.6"
   },
   "scripts": {
-    "start:dev": "NODE_ENV='development' nodemon",
-    "start:prod": "NODE_ENV='production' node build/main.js",
+    "start:dev": "NODE_ENV='development' nodemon --signal SIGHUP",
+    "start:prod": "NODE_ENV='production' node dist/index.js",
     "build": "tsc -p tsconfig.json",
     "build:watch": "tsc -w -p tsconfig.json"
   }
