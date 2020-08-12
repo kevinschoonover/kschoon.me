@@ -1,15 +1,18 @@
 ---
 version: "3.5"
 services:
-  db:
-    ports:
-      - "5432:5432"
   web:
     build:
       context: ./backend/
       target: rust-base
     volumes:
       - "./backend/:/usr/src/backend/"
+    labels:
+      - traefik.http.routers.api.rule=Host(`lvh.me`)
+
+  faktory:
+    labels:
+      - traefik.http.routers.jobs.rule=Host(`faktory.lvh.me`)
   faktory_worker:
     build:
       context: ./backend/worker/
@@ -17,6 +20,7 @@ services:
     volumes:
       - "./backend/worker/:/usr/src/worker/"
       - "./backend/.env:/usr/src/worker/.env"
+
   notifications:
     build:
       context: ./notifications/
@@ -24,6 +28,14 @@ services:
     volumes:
       - "./notifications/:/usr/src/notifications/"
 
+  sso:
+    build:
+      context: ./sso/
+      target: development
+    volumes:
+      - "./sso/:/usr/src/sso/"
+    labels:
+      - traefik.http.routers.sso.rule=Host(`sso.lvh.me`)
   identity:
     build:
       context: ./identity/
@@ -31,9 +43,6 @@ services:
     volumes:
       - "./identity/:/usr/src/identity/"
 
-  sso:
-    build:
-      context: ./sso/
-      target: development
-    volumes:
-      - "./sso/:/usr/src/sso/"
+  db:
+    ports:
+      - "5432:5432"

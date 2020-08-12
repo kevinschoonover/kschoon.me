@@ -27,19 +27,19 @@ services:
     image: "kschoonme/faktory-worker:latest"
     env_file:
       - ./backend/.env
+
   web:
     image: "kschoonme/backend:latest"
     labels:
-      - traefik.enable=true
       - traefik.http.routers.api.rule=Host(`api.kschoon.me`)
       - traefik.http.routers.api.tls=true
       - traefik.http.routers.api.tls.certresolver=tls_resolver
       - traefik.http.services.web-kschoonme.loadbalancer.server.port=8080
     env_file:
       - ./backend/.env
+
   faktory:
     labels:
-      - traefik.enable=true
       - traefik.http.routers.faktory.rule=Host(`faktory.kschoon.me`)
       - traefik.http.routers.faktory.tls=true
       - traefik.http.routers.faktory.tls.certresolver=tls_resolver
@@ -48,13 +48,22 @@ services:
      - ./.docker/faktory.env
     environment:
       - PRODUCTION=true
+  faktory_worker:
+    image: "kschoonme/faktory-worker:latest"
+
+  notifications:
+    image: "kschoonme/notifications:latest"
+
+  sso:
+    image: "kschoonme/sso:latest"
+    labels:
+      - traefik.http.routers.api.rule=Host(`sso.kschoon.me`)
+      - traefik.http.routers.api.tls=true
+      - traefik.http.routers.api.tls.certresolver=tls_resolver
+  identity:
+    image: "kschoonme/identity:latest"
+
   redis:
     command: redis-server --appendonly yes
     volumes:
       - "./redis-data/:/data"
-  identity:
-    image: "kschoonme/identity:latest"
-  sso:
-    image: "kschoonme/sso:latest"
-  notifications:
-    image: "kschoonme/notifications:latest"
