@@ -80,4 +80,21 @@ impl Database {
             .load::<models::Checkin>(&conn)?;
         return Ok(checkins);
     }
+
+    pub fn find_page(&self, start: Option<String>, end: Option<String>) -> Result<Vec<models::Checkin>, Error> {
+        let conn = self.pool.get()?;
+        let start = start.map(|s| s.parse::<i32>());
+        let end = end.map(|s| s.parse::<i32>());
+        let mut range_filter = checkins_table::table.into_boxed();
+        if let Some(Ok(start)) = start {
+            range_filter = range_filter.filter(checkins_table::id.gt(start));
+        }
+        if let Some(Ok(end)) = end {
+            range_filter = range_filter.filter(checkins_table::id.lt(end));
+        }
+        let page = range_filter
+            .order_by(checkins_table::id.asc())
+            .load::<models::Checkin>(&conn)?;
+        Ok(page)
+    }
 }

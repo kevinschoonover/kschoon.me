@@ -76,32 +76,13 @@ impl Checkin {
             last,
             |after, before, first, last| async move {
                 let database = ctx.data::<Database>()?;
-                let checkin_nodes = database.get_checkins()?;
+                let total = database.get_checkins_count()?;
+                let nodes = database.find_page(after, before)?;
 
-                // TODO: we probably dont need this generic logic
-                // as the id and cursor should map 1-to-1
-                let start_idx = after
-                    .and_then(|cursor| {
-                        checkin_nodes
-                            .clone()
-                            .into_iter()
-                            .position(|node| node.id.to_string() == cursor)
-                            .map(|idx| idx + 1)
-                    })
-                    .unwrap_or(0);
-                let end_idx = before
-                    .and_then(|cursor| {
-                        checkin_nodes
-                            .clone()
-                            .into_iter()
-                            .rposition(|node| node.id.to_string() == cursor)
-                    })
-                    .unwrap_or(checkin_nodes.len());
+                let mut has_next_page = total > 0i64;
+                let mut has_previous_page = (nodes.len() as i64) < total;
 
-                let mut has_previous_page = start_idx > 0;
-                let mut has_next_page = end_idx < checkin_nodes.len();
-
-                let mut nodes = &checkin_nodes[start_idx..end_idx];
+                let mut nodes = nodes.as_slice();
 
                 if let Some(first) = first {
                     if nodes.len() > first {
@@ -145,6 +126,6 @@ impl Checkin {
 pub struct NewCheckin {
     pub first_name: String,
     pub last_name: String,
-    #[field(validator(and(StringMinLength(length = "6"), StringMaxLength(length = "8"))))]
+    #[field(validator(and(StringMinLength(length = "8"), StringMaxLength(length = "8"))))]
     pub reservation_code: String,
 }
