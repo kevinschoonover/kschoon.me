@@ -2,9 +2,11 @@ FROM node:14.5 AS builder
 
 WORKDIR /usr/src/sso
 
-COPY . .
+COPY ./yarn.lock ./package.json ./
 
 RUN yarn
+
+COPY ./nodemon.json ./tsconfig.json ./tailwind.config.js ./
 
 RUN yarn run build
 
