@@ -1,4 +1,9 @@
-import { interactionPolicy, Configuration } from "oidc-provider";
+import {
+  interactionPolicy,
+  Configuration,
+  KoaContextWithOIDC,
+  CanBePromise,
+} from "oidc-provider";
 import { JSONWebKeySet } from "jose";
 import { renderError } from "../helpers/renderError";
 
@@ -6,26 +11,81 @@ import jwks from "../jwks.json";
 
 const { Prompt, base: policy } = interactionPolicy;
 
+// WARNING: Do NOT add clients to this list that are not first-party clients as
+// they allow you to bypass consent checks.
+const firstPartyClients = [
+  {
+    client_id: "foo",
+    client_secret: "bar",
+    redirect_uris: ["http://lvh.me/cb"],
+  },
+];
+
+const firstPartyClientIds = new Set(
+  firstPartyClients.map((client) => client.client_id)
+);
+
 // copies the default policy, already has login and consent prompt policies
 const interactions = policy();
+const consentPrompt = interactions.get("consent")!;
+consentPrompt.checks.get("client_not_authorized")!.check = (
+  ctx: KoaContextWithOIDC
+): CanBePromise<boolean> => {
+  const { oidc } = ctx;
+  const { clientId } = oidc.client!;
+  oidc.session!.ensureClientContainer(oidc.client!.clientId);
+  if (firstPartyClientIds.has(clientId)) {
+    oidc.session!.promptedScopesFor(
+      oidc.params!.client_id,
+      oidc.requestParamScopes
+    );
+    oidc.session!.promptedClaimsFor(
+      oidc.params!.client_id,
+      oidc.requestParamClaims
+    );
 
-// create a requestable prompt with no implicit checks
-const selectAccount = new Prompt({
-  name: "select_account",
-  requestable: true,
-});
+    return false;
+  }
 
-// add to index 0, order goes select_account > login > consent
-interactions.add(selectAccount, 0);
+  if (oidc.session!.sidFor(clientId)) {
+    return false;
+  }
+
+  return true;
+};
+
+consentPrompt.checks.get("scopes_missing")!.check = (
+  ctx: KoaContextWithOIDC
+): CanBePromise<boolean> => {
+  const { oidc } = ctx;
+  const { clientId } = oidc.client!;
+  oidc.session!.ensureClientContainer(oidc.client!.clientId);
+  const promptedScopes = oidc.session!.promptedScopesFor(clientId);
+
+  if (firstPartyClientIds.has(clientId)) {
+    oidc.session!.promptedScopesFor(
+      oidc.params!.client_id,
+      oidc.requestParamScopes
+    );
+    oidc.session!.promptedClaimsFor(
+      oidc.params!.client_id,
+      oidc.requestParamClaims
+    );
+    return false;
+  }
+
+  for (const scope of oidc.requestParamScopes) {
+    // eslint-disable-line no-restricted-syntax
+    if (!promptedScopes.has(scope)) {
+      return true;
+    }
+  }
+
+  return false;
+};
 
 export const config: Configuration = {
-  clients: [
-    {
-      client_id: "foo",
-      client_secret: "bar",
-      redirect_uris: ["http://lvh.me/cb"],
-    },
-  ],
+  clients: firstPartyClients,
   interactions: {
     policy: interactions,
     url(ctx, interaction) {

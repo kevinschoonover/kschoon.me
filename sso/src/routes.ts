@@ -92,6 +92,8 @@ export const routes: (provider: Provider) => Router = (provider: Provider) => {
           details: prompt.details,
           params,
           title: "Authorize",
+          error: null,
+          IS_PRODUCTION: config.IS_PRODUCTION,
           session: session ? debug(session) : undefined,
           dbg: {
             params: debug(params),
