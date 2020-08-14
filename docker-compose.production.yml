@@ -60,6 +60,8 @@ services:
       - traefik.http.routers.api.rule=Host(`sso.kschoon.me`)
       - traefik.http.routers.api.tls=true
       - traefik.http.routers.api.tls.certresolver=tls_resolver
+    environment:
+      - ISSUER=https://sso.kschoon.me
   identity:
     image: "kschoonme/identity:latest"
 

@@ -36,6 +36,8 @@ services:
       - "./sso/:/usr/src/sso/"
     labels:
       - traefik.http.routers.sso.rule=Host(`sso.lvh.me`)
+    environment:
+      - ISSUER=http://sso.lvh.me
   identity:
     build:
       context: ./identity/
