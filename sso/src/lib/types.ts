@@ -1,5 +1,5 @@
 import { DefaultState, ParameterizedContext, Context } from "koa";
 import { IdentityClient } from "kschoonme-identity-pb";
 
-export type InteractionContext = DefaultState;
-export type InteractionState = Context & { grpcClient: IdentityClient };
+export type InteractionState = DefaultState;
+export type InteractionContext = Context & { grpcClient: IdentityClient };
