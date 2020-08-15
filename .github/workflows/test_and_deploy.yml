@@ -97,7 +97,7 @@ jobs:
           name: tfplan
           path: ./deploy/tfplan
 
-  docker_so_publish:
+  docker_sso_publish:
     runs-on: ubuntu-latest
 
     env:
