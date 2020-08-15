@@ -1411,19 +1411,19 @@ keyv@^3.0.0:
   dependencies:
     json-buffer "3.0.0"
 
-kschoonme-identity-pb@^1.0.0-alpha.7:
-  version "1.0.0-alpha.7"
-  resolved "https://registry.yarnpkg.com/kschoonme-identity-pb/-/kschoonme-identity-pb-1.0.0-alpha.7.tgz#c06310732e3ca9e908efce80dbfc33ec8cd4ee6f"
-  integrity sha512-Tv6d2JTBv1YV5MPH45YZxThHVoOH0Z5LnzGcBbLhRlgBImxn06AERFpf0bcHTMgrFG3otQsiLbWw9ol8ynH8Zw==
+kschoonme-identity-pb@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/kschoonme-identity-pb/-/kschoonme-identity-pb-1.0.0.tgz#aa4c555502982a355d955d64914694eed574daf0"
+  integrity sha512-Kertzz7Qz7Uk384PtrLxSdH8rEmW6yfx7a5ZLNhKKF8Z3d9WYwjHFPbwiOOU991J6gteGB5y9GShqGdaNlaXaA==
   dependencies:
     "@grpc/grpc-js" "^1.1.1"
     "@grpc/proto-loader" "^0.5.4"
     google-protobuf "^3.12.2"
 
-kschoonme-notifications-pb@^2.0.0-alpha.0:
-  version "2.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/kschoonme-notifications-pb/-/kschoonme-notifications-pb-2.0.0-alpha.0.tgz#49b9bbe9201508e6ce8f807dacb8f1dc4600c415"
-  integrity sha512-62MmNZOQg+PdDWZdIXumAZu+3DOdOYsAaGwO/ax+XuDqPRISVTmjUazG+fgbhepq9l1mCoSj0vog2X96kJtGIQ==
+kschoonme-notifications-pb@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/kschoonme-notifications-pb/-/kschoonme-notifications-pb-2.0.0.tgz#fc4347585361a42e741d2a55ac5ee732c4dd8522"
+  integrity sha512-gunXtZhtlinhPWtoqZ6Q8Z2yM3j1vUaEkvdt6WuU15Rldn4nK8ffhucTXLszZMj8Khgo1FwplUk0m+PatuWRRA==
   dependencies:
     "@grpc/grpc-js" "^1.1.1"
     "@grpc/proto-loader" "^0.5.4"

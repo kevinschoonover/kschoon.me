@@ -1977,10 +1977,10 @@ koa@^2.13.0:
     type-is "^1.6.16"
     vary "^1.1.2"
 
-kschoonme-identity-pb@^1.0.0-alpha.7:
-  version "1.0.0-alpha.8"
-  resolved "https://registry.yarnpkg.com/kschoonme-identity-pb/-/kschoonme-identity-pb-1.0.0-alpha.8.tgz#81f46c075cda1d67b0405a710adfeb03bac87f56"
-  integrity sha512-qLaiFQf4NUbeedMdsSGAPQtPMe1xlZKw5Q7yqtRC3fESXLG5+1gglvqDm01V49GywdRpa8ZQ54wAq9AsfIX5lg==
+kschoonme-identity-pb@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/kschoonme-identity-pb/-/kschoonme-identity-pb-1.0.0.tgz#aa4c555502982a355d955d64914694eed574daf0"
+  integrity sha512-Kertzz7Qz7Uk384PtrLxSdH8rEmW6yfx7a5ZLNhKKF8Z3d9WYwjHFPbwiOOU991J6gteGB5y9GShqGdaNlaXaA==
   dependencies:
     "@grpc/grpc-js" "^1.1.1"
     "@grpc/proto-loader" "^0.5.4"
