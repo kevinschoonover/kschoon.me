@@ -89,6 +89,13 @@ resource "cloudflare_record" "faktory" {
   value   = digitalocean_droplet.primary_api.ipv4_address
 }
 
+resource "cloudflare_record" "sso" {
+  zone_id = cloudflare_zone.kschoonme.id
+  type    = "A"
+  name    = terraform.workspace == "production" ? "sso" : "sso.dev"
+  value   = digitalocean_droplet.primary_api.ipv4_address
+}
+
 resource "cloudflare_record" "checkin" {
   zone_id = cloudflare_zone.kschoonme.id
   type    = "CNAME"
