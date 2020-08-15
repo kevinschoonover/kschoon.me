@@ -10,6 +10,7 @@ terraform {
 }
 
 provider "digitalocean" {
+  version = "~> 1.14"
   token = var.do_token
 }
 

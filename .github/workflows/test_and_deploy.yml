@@ -78,7 +78,7 @@ jobs:
         working-directory: ./deploy
 
     env:
-      terraform_version: latest
+      terraform_version: 0.13.0
       TF_VAR_do_token: ${{ secrets.DO_ACCESS_TOKEN }}
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_WORKSPACE: production
@@ -221,7 +221,7 @@ jobs:
         working-directory: ./deploy
 
     env:
-      terraform_version: latest
+      terraform_version: 0.13.0
       TF_VAR_do_token: ${{ secrets.DO_ACCESS_TOKEN }}
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       TF_WORKSPACE: production
