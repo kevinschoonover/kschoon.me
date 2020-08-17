@@ -1,31 +1,34 @@
 FROM node:14.5 AS builder
-
 WORKDIR /usr/src/identity
 
-COPY . .
-
+COPY ./yarn.lock ./package.json ./
 RUN yarn
 
-RUN yarn run build
+COPY ./nodemon.json ./tsconfig.json ./
+COPY ./src/ ./src/
+
 
 FROM builder AS development
-
 CMD yarn start:dev
 
-FROM node:14.5-alpine as production
 
-
+FROM builder as production-shim
 ENV NODE_ENV=production
 WORKDIR /usr/src/identity
 
-COPY package.json ./
-COPY yarn.lock ./
+RUN yarn build
 
+
+FROM node:14.5-alpine as production
 USER node
+ENV NODE_ENV=production
+WORKDIR /usr/src/identity
 
-COPY --from=builder /usr/src/identity/node_modules/ node_modules/
-COPY --from=builder /usr/src/identity/dist/ dist/
+COPY package.json yarn.lock tsconfig.json ./
 
-EXPOSE 3009
+COPY --from=production-shim /usr/src/identity/node_modules/ node_modules/
+COPY --from=production-shim /usr/src/identity/dist/ dist/
+
+EXPOSE 3000
 
 ENTRYPOINT [ "node", "dist/index.js" ]

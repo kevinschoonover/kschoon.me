@@ -1,32 +1,33 @@
 FROM node:14.5 AS builder
-
 WORKDIR /usr/src/sso
 
 COPY ./yarn.lock ./package.json ./
-
 RUN yarn
 
-COPY ./nodemon.json ./tsconfig.json ./tailwind.config.js ./
+COPY ./nodemon.json ./tsconfig.json ./
+COPY ./src/ ./src/
 
-RUN yarn run build
 
 FROM builder AS development
-
 CMD yarn start:dev
 
-FROM node:14.5-alpine as production
 
-
+FROM builder as production-shim
 ENV NODE_ENV=production
 WORKDIR /usr/src/sso
 
-COPY package.json ./
-COPY yarn.lock ./
+RUN yarn build
 
+
+FROM node:14.5-alpine as production
 USER node
+ENV NODE_ENV=production
+WORKDIR /usr/src/sso
 
-COPY --from=builder /usr/src/sso/node_modules/ node_modules/
-COPY --from=builder /usr/src/sso/dist/ dist/
+COPY package.json yarn.lock tsconfig.json ./
+
+COPY --from=production-shim /usr/src/sso/node_modules/ node_modules/
+COPY --from=production-shim /usr/src/sso/dist/ dist/
 
 EXPOSE 3000
 
