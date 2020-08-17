@@ -42,7 +42,7 @@
     "typescript": "3.9.2"
   },
   "scripts": {
-    "build:css": "tailwind build src/tailwind.css -o src/public/main.css",
+    "build:css": "tailwind build -c src/tailwind.config.js src/tailwind.css -o src/public/main.css",
     "start:dev": "NODE_ENV='development' nodemon --signal SIGHUP",
     "start:prod": "NODE_ENV='production' node dist/main.js",
     "generate:jwks": "ts-node -r tsconfig-paths/register src/helpers/generate-keys.ts",
