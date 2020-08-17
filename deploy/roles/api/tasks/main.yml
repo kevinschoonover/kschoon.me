@@ -1,4 +1,7 @@
 ---
+- name: "Install docker on the host"
+  include: ./docker.yml
+
 - name: "Create the API user"
   user:
     name: "{{ API_USER }}"
@@ -6,22 +9,14 @@
     system: yes
     groups:
       - docker
+  become: yes
 
 - name: "Clone the kschoon.me repo"
   git:
     repo: "https://github.com/kevinschoonover/kschoon.me.git"
     dest: "{{ API_INSTALLATION_DIR }}"
-    version: "master"
-
-- name: "Create the .env file for the backend"
-  template:
-    src: "web.env.j2"
-    dest: "{{ API_INSTALLATION_DIR }}/backend/.env"
-
-- name: "Create the .env file for the faktory container"
-  template:
-    src: "faktory.env.j2"
-    dest: "{{ API_INSTALLATION_DIR }}/.docker/faktory.env"
+    version: "terraform-azure"
+  become: yes
 
 - name: "Update the API installation directory permissions"
   file:
@@ -29,6 +24,25 @@
     owner: "{{ API_USER }}"
     state: directory
     recurse: yes
+  become: yes
+
+- name: "Create the .env file for the backend"
+  template:
+    src: "web.env.j2"
+    dest: "{{ API_INSTALLATION_DIR }}/backend/.env"
+    owner: "{{ API_USER }}"
+  become: yes
+  become_user: "{{ API_USER }}"
+
+
+- name: "Create the .env file for the faktory container"
+  template:
+    src: "faktory.env.j2"
+    dest: "{{ API_INSTALLATION_DIR }}/.docker/faktory.env"
+    owner: "{{ API_USER }}"
+  become: yes
+  become_user: "{{ API_USER }}"
+
 
 - name: "See if acme file exists"
   stat:
@@ -41,18 +55,9 @@
     owner: "{{ API_USER }}"
     state: "{{ 'file' if  acme_file.stat.exists else 'touch' }}"
     mode: 0600
+  become: yes
+  become_user: "{{ API_USER }}"
 
-- name: "Install the pip3 python dependency manager"
-  package:
-    name: python3-pip
-    state: present
-
-- name: "Install the docker python modules"
-  pip:
-    name:
-      - docker
-      - docker-compose
-    state: present
 
 - name: "Start the API"
   vars:
@@ -63,3 +68,6 @@
       - docker-compose.yml
       - docker-compose.production.yml
     project_src: "{{ DOCKER_DIR }}"
+  become: yes
+  become_user: "{{ API_USER }}"
+
