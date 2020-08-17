@@ -7,61 +7,151 @@ terraform {
       prefix = "kschoonme-"
     }
   }
-}
-
-provider "digitalocean" {
-  version = "~> 1.14"
-  token = var.do_token
+  required_providers {
+    cloudflare = {
+      source = "terraform-providers/cloudflare"
+      version = "~> 2.9.0"
+    }
+    azure = {
+      source = "azurerm"
+      version = "~> 2.23.0"
+    }
+  }
+  required_version = ">= 0.13"
 }
 
 provider "cloudflare" {
-  version = "~> 2.0"
   api_token = var.cloudflare_api_token
 }
 
-
-resource "digitalocean_ssh_key" "default" {
-    name = terraform.workspace == "production" ? "kschoon.me prod SSH key" : "kschoon.me dev SSH key"
-    public_key = terraform.workspace == "production" ? file("./.keys/digitalocean-kschoon.pub") : file("./.keys/digitalocean-kschoon-dev.pub")
+provider "azurerm" {
+  features {}
 }
 
-resource "digitalocean_droplet" "primary_api" {
-  name = "api.kschoon.me"
-  # image = "ubuntu-18-04-x64"
-  image = "docker-18-04"
-  region = "nyc3"
-  size = "s-1vcpu-1gb"
-  monitoring = true
-  private_networking = true
-  tags = ["api"]
-  ssh_keys = [digitalocean_ssh_key.default.fingerprint]
+resource "azurerm_resource_group" "kschoonme" {
+  name     = "kschoonme"
+  location = "Central US"
 }
 
-resource "digitalocean_project" "default" {
-  name = terraform.workspace == "production" ? "kschoon.me" : "kschoon.me - dev"
-  description = "All *.kschoon.me services and infrastructure"
-  purpose = "Other"
-  environment = terraform.workspace == "production" ? "production" : "development"
-  resources   = [
-    digitalocean_droplet.primary_api.urn, 
+# NOTE: the Name used for Redis needs to be globally unique
+resource "azurerm_redis_cache" "primary" {
+  name                = "kschoonme-redis-primary"
+  location            = azurerm_resource_group.kschoonme.location
+  resource_group_name = azurerm_resource_group.kschoonme.name
+  capacity            = 0
+  family              = "C"
+  sku_name            = "Standard"
+  enable_non_ssl_port = false
+  minimum_tls_version = "1.2"
+
+  redis_configuration {
+  }
+}
+
+resource "azurerm_postgresql_server" "primary" {
+  name                = "kschoonme-postgres-primary"
+  location            = azurerm_resource_group.kschoonme.location
+  resource_group_name = azurerm_resource_group.kschoonme.name
+
+  sku_name = "B_Gen5_1"
+
+  storage_mb                   = 5120
+  backup_retention_days        = 7
+  geo_redundant_backup_enabled = false
+  auto_grow_enabled            = true
+
+  administrator_login          = "kevin"
+  administrator_login_password = var.postgresql_admin_pass
+  version                      = "11"
+  ssl_enforcement_enabled      = true
+}
+
+resource "azurerm_postgresql_database" "identity" {
+  name                = "identity"
+  resource_group_name = azurerm_resource_group.kschoonme.name
+  server_name         = azurerm_postgresql_server.primary.name
+  charset             = "UTF8"
+  collation           = "English_United States.1252"
+}
+
+resource "azurerm_virtual_network" "primary" {
+  name                = "kschoonme-network"
+  address_space       = ["10.0.0.0/16"]
+  location            = azurerm_resource_group.kschoonme.location
+  resource_group_name = azurerm_resource_group.kschoonme.name
+}
+
+resource "azurerm_subnet" "internal" {
+  name                 = "internal"
+  resource_group_name  = azurerm_resource_group.kschoonme.name
+  virtual_network_name = azurerm_virtual_network.primary.name
+  address_prefixes     = ["10.0.2.0/24"]
+}
+
+resource "azurerm_public_ip" "vm1" {
+  name                = "kschoonme-vm1-ip"
+  resource_group_name = azurerm_resource_group.kschoonme.name
+  location            = azurerm_resource_group.kschoonme.location
+  allocation_method   = "Static"
+
+  tags = {
+    environment = terraform.workspace == "production" ? "Production" : "Development"
+  }
+}
+
+resource "azurerm_network_interface" "vm1" {
+  name                = "vm1-nic"
+  location            = azurerm_resource_group.kschoonme.location
+  resource_group_name = azurerm_resource_group.kschoonme.name
+
+  ip_configuration {
+    name                          = "network"
+    subnet_id                     = azurerm_subnet.internal.id
+    private_ip_address_allocation = "Dynamic"
+    public_ip_address_id = azurerm_public_ip.vm1.id
+  }
+}
+
+resource "azurerm_linux_virtual_machine" "primary" {
+  name                = "kschoon.me"
+  resource_group_name = azurerm_resource_group.kschoonme.name
+  location            = azurerm_resource_group.kschoonme.location
+  size                = "Standard_F2"
+  admin_username      = "kevin"
+  network_interface_ids = [
+    azurerm_network_interface.vm1.id,
   ]
+
+  admin_ssh_key {
+    username   = "kevin"
+    public_key = terraform.workspace == "production" ? file("./.keys/digitalocean-kschoon.pub") : file("./.keys/vms-kschoon-dev.pub")
+  }
+
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
 }
 
 resource "cloudflare_zone" "kschoonme" {
-    zone = "kschoon.me"
-
+    zone = terraform.workspace == "production" ? "kschoon.me" : "kschoon.dev"
 }
 
 resource "cloudflare_record" "root" {
   zone_id = cloudflare_zone.kschoonme.id
   type    = "CNAME"
-  name    = terraform.workspace == "production" ? "@" : "dev"
-
+  name    = "@" 
   value   = "nervous-hoover-27535d.netlify.app"
 }
 
 resource "cloudflare_record" "www" {
-  count   = terraform.workspace == "production" ? "1" : "0"
   zone_id = cloudflare_zone.kschoonme.id
   type    = "CNAME"
   name    = "www"
@@ -71,35 +161,35 @@ resource "cloudflare_record" "www" {
 resource "cloudflare_record" "api" {
   zone_id = cloudflare_zone.kschoonme.id
   type    = "A"
-  name    = terraform.workspace == "production" ? "api" : "api.dev"
-  value   = digitalocean_droplet.primary_api.ipv4_address
+  name    = "api"
+  value   = azurerm_linux_virtual_machine.primary.public_ip_address
 }
 
 resource "cloudflare_record" "traefik" {
   zone_id = cloudflare_zone.kschoonme.id
   type    = "A"
-  name    = terraform.workspace == "production" ? "traefik" : "traefik.dev"
-  value   = digitalocean_droplet.primary_api.ipv4_address
+  name    = "traefik"
+  value   = azurerm_linux_virtual_machine.primary.public_ip_address
 }
 
 resource "cloudflare_record" "faktory" {
   zone_id = cloudflare_zone.kschoonme.id
   type    = "A"
-  name    = terraform.workspace == "production" ? "faktory" : "faktory.dev"
-  value   = digitalocean_droplet.primary_api.ipv4_address
+  name    = "faktory"
+  value   = azurerm_linux_virtual_machine.primary.public_ip_address
 }
 
 resource "cloudflare_record" "sso" {
   zone_id = cloudflare_zone.kschoonme.id
   type    = "A"
-  name    = terraform.workspace == "production" ? "sso" : "sso.dev"
-  value   = digitalocean_droplet.primary_api.ipv4_address
+  name    = "sso"
+  value   = azurerm_linux_virtual_machine.primary.public_ip_address
 }
 
 resource "cloudflare_record" "checkin" {
   zone_id = cloudflare_zone.kschoonme.id
   type    = "CNAME"
-  name    = terraform.workspace == "production" ? "checkin" : "checkin.dev"
+  name    = "checkin"
   value   = "angry-mestorf-27dfe0.netlify.app"
 }
 

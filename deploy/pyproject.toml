@@ -7,10 +7,13 @@ license = "MPL-2.0"
 
 [tool.poetry.dependencies]
 python = "^3.8"
-ansible = "^2.9.6"
+ansible = {extras = ["azure"], version = "^2.9.12"}
 ansible-lint = "^4.2.0"
 jinja2 = "^2.11.1"
 requests = "^2.23.0"
+msrest = "^0.6.18"
+msrestazure = "^0.6.4"
+azure-cli = "^2.10.1"
 
 [tool.poetry.dev-dependencies]
 cryptography = "^2.9.2"

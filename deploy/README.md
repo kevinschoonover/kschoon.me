@@ -10,6 +10,7 @@ All infrastructure as code (IaC) and instructions used to deploy the
 + [Terraform](https://www.terraform.io/docs/index.html)
 + [git](https://git-scm.com/downloads)
 + [ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html)
++ [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli?view=azure-cli-latest)
 
 ## Installation
 1. Clone the repository to your local computer by running: 
@@ -26,6 +27,10 @@ All infrastructure as code (IaC) and instructions used to deploy the
    the [API Tokens section](https://dash.cloudflare.com/profile/api-tokens) in
    profile settings on [cloudflare](https://dash.cloudflare.com/) with the `Zone
    DNS Edit` and `Zone Zone Edit` permissions.
+
+3. [Login to Azure using the Azure
+   CLI](https://www.terraform.io/docs/providers/azurerm/guides/azure_cli.html)
+   and point it to the appropriate subscription.
    
 3. Navigate to the `deploy` directory in the repo:
     ```bash
@@ -104,5 +109,5 @@ terraform destroy
 To **configure provisioned machines**, run:
 ```bash
 # --ask-vault-pass requires the vault password stored by Kevin.
-ansible-playbook -i digital_ocean.py site.yml --ask-vault-pass
+ansible-playbook -i azure_rm.yml site.yml --ask-vault-pass
 ```
