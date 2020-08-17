@@ -1,6 +1,6 @@
 ---
 - name: Install API
-  hosts: api
+  hosts: all
   roles:
       - api
   vars_files:

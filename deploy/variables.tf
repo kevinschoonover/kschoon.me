@@ -5,3 +5,7 @@ variable "do_token" {
 variable "cloudflare_api_token" {
  description = "API Token generated from https://dash.cloudflare.com/profile/api-tokens with Edit DNS Zone permissions"
 }
+
+variable "postgresql_admin_pass" {
+ description = "Admin password for the PostgreSQL server"
+}

@@ -32,3 +32,5 @@ digital_ocean.ini
 
 .keys/digitalocean-kschoon
 .keys/digitalocean-kschoon-dev
+.keys/vms-kschoon-dev
+.keys/vms-kschoon
