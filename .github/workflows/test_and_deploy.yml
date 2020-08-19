@@ -81,6 +81,7 @@ jobs:
       terraform_version: 0.13.0
       TF_VAR_do_token: ${{ secrets.DO_ACCESS_TOKEN }}
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_postgres_admin_pass: ${{ secrets.POSTGRES_ADMIN_PASS }}
       TF_WORKSPACE: production
 
     steps:
@@ -295,6 +296,7 @@ jobs:
       terraform_version: 0.13.0
       TF_VAR_do_token: ${{ secrets.DO_ACCESS_TOKEN }}
       TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      TF_VAR_postgres_admin_pass: ${{ secrets.POSTGRES_ADMIN_PASS }}
       TF_WORKSPACE: production
 
     if: github.ref == 'refs/heads/master'
