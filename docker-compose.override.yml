@@ -5,6 +5,8 @@ services:
     build:
       context: ./backend/
       target: rust-base
+    depends_on:
+      - db
     volumes:
       - "./backend/:/usr/src/backend/"
     labels:
@@ -39,6 +41,8 @@ services:
     environment:
       - ISSUER=http://sso.lvh.me
   identity:
+    depends_on:
+      - db
     build:
       context: ./identity/
       target: development

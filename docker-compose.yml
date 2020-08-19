@@ -24,8 +24,6 @@ services:
     environment:
       - LOG_LEVEL=debug
       - POSTGRES_HOST=db
-    depends_on:
-      - db
     labels:
       - traefik.enable=true
 
@@ -66,7 +64,5 @@ services:
       - traefik.enable=false
     environment:
       - POSTGRES_URL="postgres://postgres:postgres@db:5432"
-    depends_on:
-      - db
 
   # redis/Database defined in docker-compose.override.yml
