@@ -46,5 +46,20 @@ services:
       - "./identity/:/usr/src/identity/"
 
   db:
+    image: "postgres:12"
     ports:
       - "5432:5432"
+    restart: unless-stopped
+    environment:
+      - LOG_LEVEL=debug
+      - POSTGRES_PASSWORD=postgres
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+  redis:
+    # command and volume is overridden in docker-compose.production.yml
+    image: "redis:6-alpine"
+    restart: unless-stopped
+    ports:
+      - "6379:6379"

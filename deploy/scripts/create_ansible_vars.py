@@ -3,7 +3,13 @@ import subprocess
 
 
 def main():
-    variables_from_terraform = ["redis_url", "postgres_fqdn"]
+    variables_from_terraform = [
+        "redis_url",
+        "postgres_fqdn",
+        "postgres_username",
+        "postgres_password",
+        "postgres_identity_db",
+    ]
     output_variables = []
     procs = [
         (x, subprocess.Popen(["terraform", "output", x], stdout=subprocess.PIPE))
