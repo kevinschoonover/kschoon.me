@@ -30,7 +30,7 @@ override.tf.json
 # example: *tfplan*
 digital_ocean.ini
 
-.keys/digitalocean-kschoon
-.keys/digitalocean-kschoon-dev
-.keys/vms-kschoon-dev
-.keys/vms-kschoon
+.keys/prod-kschoon-vms
+.keys/dev-kschoon-vms
+
+group_vars/terraform.yml

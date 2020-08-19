@@ -55,17 +55,17 @@ All infrastructure as code (IaC) and instructions used to deploy the
 6. Populate the `digital_ocean.ini` with the appropriate values.
 
 7. (optional) Generate a ssh key with the following path
-   `./.keys/digitalocean-kschoon` (or your own ssh key, but make sure to add it
+   `./.keys/dev-kschoon-vms` (or your own ssh key, but make sure to add it
    to the terraform file):
     ```bash
-    ssh-keygen -t rsa -b 4096 -m PEM -f ./.keys/digitalocean-kschoon
+    ssh-keygen -t rsa -b 4096 -m PEM -f ./.keys/dev-kschoon-vms
     ```
 
 7. (optional) Generate a ssh key with the following path
-   `./.keys/digitalocean-kschoon-dev` (or your own ssh key, but make sure to add it
-   to the terraform file):
+   `./.keys/prod-kschoon-vms` (or your own ssh key, but make sure to add it to
+   the terraform file):
     ```bash
-    ssh-keygen -t rsa -b 4096 -m PEM -f ./.keys/digitalocean-kschoon-dev
+    ssh-keygen -t rsa -b 4096 -m PEM -f ./.keys/prod-kschoon-vms
     ```
 
 8. (optional) Add this SSH Key to the [CircleCI
