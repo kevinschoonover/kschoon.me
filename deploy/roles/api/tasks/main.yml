@@ -1,4 +1,11 @@
 ---
+- name: Check if terraform variables are set
+  assert:
+    that:
+      - "postgres_fqdn != ''"
+      - "redis_url != ''"
+    fail_msg: "Could not find all variables to should be specified by terraform. Please check that './group_vars/terraform.yml' exists and/or if the variable names have changed."
+
 - name: "Install docker on the host"
   include: ./docker.yml
 
@@ -15,7 +22,7 @@
   git:
     repo: "https://github.com/kevinschoonover/kschoon.me.git"
     dest: "{{ API_INSTALLATION_DIR }}"
-    version: "terraform-azure"
+    version: "master"
   become: yes
 
 - name: "Update the API installation directory permissions"
@@ -58,6 +65,12 @@
   become: yes
   become_user: "{{ API_USER }}"
 
+- name: Check if KSCHOONME_DOMAIN is set
+  assert:
+    that:
+      - "KSCHOONME_DOMAIN != ''"
+    fail_msg: "Could not find the 'KSCHOONME_DOMAIN' variable. Please set in the appropriate environment file."
+
 
 - name: "Start the API"
   vars:
@@ -70,4 +83,5 @@
     project_src: "{{ DOCKER_DIR }}"
   become: yes
   become_user: "{{ API_USER }}"
-
+  environment:
+    KSCHOONME_DOMAIN: "{{ KSCHOONME_DOMAIN }}"

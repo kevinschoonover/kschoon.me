@@ -44,8 +44,7 @@ resource "azurerm_redis_cache" "primary" {
   enable_non_ssl_port = false
   minimum_tls_version = "1.2"
 
-  redis_configuration {
-  }
+  redis_configuration {}
 }
 
 resource "azurerm_postgresql_server" "primary" {
@@ -60,8 +59,8 @@ resource "azurerm_postgresql_server" "primary" {
   geo_redundant_backup_enabled = false
   auto_grow_enabled            = true
 
-  administrator_login          = "kevin"
-  administrator_login_password = var.postgresql_admin_pass
+  administrator_login          = var.postgres_admin_user
+  administrator_login_password = var.postgres_admin_pass
   version                      = "11"
   ssl_enforcement_enabled      = true
 }
@@ -95,7 +94,7 @@ resource "azurerm_public_ip" "vm1" {
   allocation_method   = "Static"
 
   tags = {
-    environment = terraform.workspace == "production" ? "Production" : "Development"
+    environment = terraform.workspace == "production" ? "production" : "development"
   }
 }
 
@@ -124,7 +123,7 @@ resource "azurerm_linux_virtual_machine" "primary" {
 
   admin_ssh_key {
     username   = "kevin"
-    public_key = terraform.workspace == "production" ? file("./.keys/digitalocean-kschoon.pub") : file("./.keys/vms-kschoon-dev.pub")
+    public_key = terraform.workspace == "production" ? file("./.keys/prod-kschoon-vms.pub") : file("./.keys/dev-kschoon-vms.pub")
   }
 
   os_disk {
@@ -137,6 +136,10 @@ resource "azurerm_linux_virtual_machine" "primary" {
     offer     = "UbuntuServer"
     sku       = "18.04-LTS"
     version   = "latest"
+  }
+
+  tags = {
+    environment = terraform.workspace == "production" ? "production" : "development"
   }
 }
 
@@ -209,4 +212,24 @@ resource "cloudflare_record" "mail2" {
   name    = "@"
   value   = "mx2.improvmx.com"
   priority = 20
+}
+
+output "redis_url" {
+  sensitive = true
+  value = azurerm_redis_cache.primary.primary_connection_string
+}
+
+output "postgres_fqdn" { 
+  sensitive = true
+  value = azurerm_postgresql_server.primary.fqdn
+}
+
+output "postgres_username" { 
+  sensitive = true
+  value = var.postgres_admin_user
+}
+
+output "postgres_password" { 
+  sensitive = true
+  value = var.postgres_admin_pass
 }
