@@ -6,6 +6,9 @@ plugin: azure_rm
 auth_source: cli
 
 keyed_groups:
-# places each host in a group named 'tag_(tag name)_(tag value)' for each tag on a VM.
-- prefix: tag
-  key: tags
+  # places each host in a group named 'tag_(tag name)_(tag value)' for each tag on a VM.
+  - prefix: tag
+    key: tags
+
+include_vm_resource_groups:
+  - kschoonme

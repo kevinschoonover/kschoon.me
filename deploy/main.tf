@@ -25,17 +25,18 @@ provider "cloudflare" {
 }
 
 provider "azurerm" {
+  subscription_id = "50b759a4-ed0b-4148-b9ce-e2d1a3da7ec2"
   features {}
 }
 
 resource "azurerm_resource_group" "kschoonme" {
-  name     = "kschoonme"
+  name     = terraform.workspace == "production" ? "kschoonme" : "kschoonme-staging"
   location = "Central US"
 }
 
 # NOTE: the Name used for Redis needs to be globally unique
 resource "azurerm_redis_cache" "primary" {
-  name                = "kschoonme-redis-primary"
+  name                = terraform.workspace == "production" ? "prod-kschoonme-redis-primary" : "staging-kschoonme-redis-primary"
   location            = azurerm_resource_group.kschoonme.location
   resource_group_name = azurerm_resource_group.kschoonme.name
   capacity            = 0
@@ -48,7 +49,7 @@ resource "azurerm_redis_cache" "primary" {
 }
 
 resource "azurerm_postgresql_server" "primary" {
-  name                = "kschoonme-postgres-primary"
+  name                = terraform.workspace == "production" ? "prod-kschoonme-postgres-primary" : "staging-kschoonme-postgres-primary"
   location            = azurerm_resource_group.kschoonme.location
   resource_group_name = azurerm_resource_group.kschoonme.name
 
@@ -112,7 +113,7 @@ resource "azurerm_network_interface" "vm1" {
 }
 
 resource "azurerm_linux_virtual_machine" "primary" {
-  name                = "kschoon.me"
+  name                = terraform.workspace == "production" ? "prod-kschoonme-vm1" : "staging-kschoonme-vm1"
   resource_group_name = azurerm_resource_group.kschoonme.name
   location            = azurerm_resource_group.kschoonme.location
   size                = "Standard_F2"
