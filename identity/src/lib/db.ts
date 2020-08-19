@@ -6,6 +6,7 @@ export = {
   url: config.POSTGRES_URL || "postgres://postgres:postgres@db:5432",
   logging: ["error", "warn"],
   logger: "advanced-console",
+  ssl: config.POSTGRES_USE_SSL,
   cache: true,
   // See src/main.ts as to why these are all false
   // Should we automatically synchronize our database?

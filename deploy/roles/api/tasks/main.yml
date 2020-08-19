@@ -38,9 +38,10 @@
     src: "web.env.j2"
     dest: "{{ API_INSTALLATION_DIR }}/backend/.env"
     owner: "{{ API_USER }}"
+  vars:
+    WEB_DATABASE_URL: "postgres://{{ postgres_username }}:{{ postgres_password }}@{{ postgres_fqdn }}/{{ postgres_identity_db }}"
   become: yes
   become_user: "{{ API_USER }}"
-
 
 - name: "Create the .env file for the faktory container"
   template:
@@ -49,7 +50,6 @@
     owner: "{{ API_USER }}"
   become: yes
   become_user: "{{ API_USER }}"
-
 
 - name: "See if acme file exists"
   stat:
@@ -70,7 +70,6 @@
     that:
       - "KSCHOONME_DOMAIN != ''"
     fail_msg: "Could not find the 'KSCHOONME_DOMAIN' variable. Please set in the appropriate environment file."
-
 
 - name: "Start the API"
   vars:

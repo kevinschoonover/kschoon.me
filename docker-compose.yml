@@ -69,19 +69,4 @@ services:
     depends_on:
       - db
 
-  redis:
-    # command and volume is overridden in docker-compose.production.yml
-    image: "redis:6-alpine"
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-  db:
-    image: "postgres:12"
-    restart: unless-stopped
-    environment:
-      - LOG_LEVEL=debug
-      - POSTGRES_PASSWORD=postgres
-    environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
+  # redis/Database defined in docker-compose.override.yml

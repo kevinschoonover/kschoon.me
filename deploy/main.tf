@@ -226,11 +226,14 @@ output "postgres_fqdn" {
 }
 
 output "postgres_username" { 
-  sensitive = true
   value = var.postgres_admin_user
 }
 
 output "postgres_password" { 
   sensitive = true
   value = var.postgres_admin_pass
+}
+
+output "postgres_identity_db" { 
+  value = azurerm_postgresql_database.identity.name
 }

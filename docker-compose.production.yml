@@ -56,6 +56,8 @@ services:
 
   sso:
     image: "kschoonme/sso:latest"
+    env_file:
+     - ./.docker/sso.env
     labels:
       - traefik.http.routers.sso.rule=Host(`sso.${KSCHOONME_DOMAIN:-kschoon.me}`)
       - traefik.http.routers.sso.tls=true
@@ -64,8 +66,3 @@ services:
       - ISSUER=https://sso.kschoon.me
   identity:
     image: "kschoonme/identity:latest"
-
-  redis:
-    command: redis-server --appendonly yes
-    volumes:
-      - "./redis-data/:/data"
