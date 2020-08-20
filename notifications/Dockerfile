@@ -28,4 +28,4 @@ COPY --from=builder /usr/src/notifications/dist/ dist/
 
 EXPOSE 3009
 
-ENTRYPOINT [ "node", "dist/index.js" ]
+CMD [ "node", "dist/index.js" ]
