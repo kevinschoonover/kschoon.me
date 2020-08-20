@@ -65,7 +65,7 @@ services:
     environment:
       - ISSUER=https://sso.kschoon.me
     volumes:
-      - "./sso/src/jwks.json:/usr/src/sso/"
+      - "./sso/src/jwks.json:/usr/src/sso/dist/jwks.json:ro"
   identity:
     image: "kschoonme/identity:latest"
     env_file:

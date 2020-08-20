@@ -89,7 +89,7 @@
 - name: "Add the jwks.json file to sso"
   copy:
     src: "{{ role_path }}/../../.keys/jwks.json"
-    dest: "{{ API_INSTALLATION_DIR }}/sso/src/sso.env"
+    dest: "{{ API_INSTALLATION_DIR }}/sso/src/"
     owner: "{{ API_USER }}"
     mode: 0600
   become: yes
