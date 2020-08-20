@@ -62,4 +62,4 @@ typings/
 
 # Private keys
 acme.json
-.docker/faktory.env
+.docker/*.env
