@@ -100,13 +100,13 @@ poetry run python ./scripts/create_ansible_vars.py
 
 ### Configure provisioned machines
 To configure **staging** machines, run:
-```
+```bash
 # --ask-vault-pass requires the vault password stored by Kevin.
 ansible-playbook -i ./inventory/staging_azure_rm.yml site.yml --ask-vault-pass
 ```
 
 To configure **produciton machines**, run:
-```
+```bash
 # --ask-vault-pass requires the vault password stored by Kevin.
 ansible-playbook -i ./inventory/prod_azure_rm.yml site.yml --ask-vault-pass
 ```

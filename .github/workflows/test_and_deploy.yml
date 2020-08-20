@@ -16,17 +16,18 @@ env:
   ARM_TENANT_ID: 674d9780-1101-497a-a7f9-d7e74cf76399
 
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v2
-    - name: Lint Code Base
-      uses: docker://github/super-linter:v3
-      env:
-        VALIDATE_ALL_CODEBASE: false
-        DEFAULT_BRANCH: master
-        VALIDATE_JAVASCRIPT_ES: false
-        TYPESCRIPT_ES_CONFIG_FILE: false
+  # lint:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #   - uses: actions/checkout@v2
+  #   - name: Lint Code Base
+  #     uses: docker://github/super-linter:v3
+  #     env:
+  #       VALIDATE_ALL_CODEBASE: false
+  #       DEFAULT_BRANCH: master
+  #       VALIDATE_JAVASCRIPT_ES: false
+  #       TYPESCRIPT_ES_CONFIG_FILE: false
+  #       VALIDATE_TERRAFORM: false
 
   frontend_tests:
     runs-on: ubuntu-latest
@@ -287,7 +288,7 @@ jobs:
           docker push $IMAGE_NAME:$VERSION
 
   deploy:
-    needs: [docker_faktory_worker_publish, docker_backend_publish, frontend_tests, lint]
+    needs: [docker_faktory_worker_publish, docker_backend_publish, frontend_tests]
     runs-on: ubuntu-latest
 
     strategy:
