@@ -8,6 +8,12 @@ env:
   TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
   TF_VAR_postgres_admin_pass: ${{ secrets.POSTGRES_ADMIN_PASS }}
   TF_WORKSPACE: production
+  # Created with
+  # https://www.terraform.io/docs/providers/azurerm/guides/service_principal_client_secret.html
+  ARM_CLIENT_ID: d32d4bd0-efd3-48ff-a4c0-07a6f394ee67
+  ARM_CLIENT_SECRET: ${{ secrets.AZURE_RM_CLIENT_SECRET }}
+  ARM_SUBSCRIPTION_ID: 50b759a4-ed0b-4148-b9ce-e2d1a3da7ec2
+  ARM_TENANT_ID: 674d9780-1101-497a-a7f9-d7e74cf76399
 
 jobs:
   lint:
@@ -84,13 +90,8 @@ jobs:
       run:
         working-directory: ./deploy
 
-    env:
     steps:
       - uses: actions/checkout@v2
-      - name: Login to azure
-        uses: azure/login@v1.1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
       - uses: hashicorp/setup-terraform@v1.1.0
         with:
           terraform_version: ${{ env.terraform_version }}
@@ -341,11 +342,6 @@ jobs:
 
     - name: Create vault password file
       run: echo ${{ secrets.ANSIBLE_VAULT_PASSWORD }} > ~/.vault_pass
-
-    - name: Login to azure
-      uses: azure/login@v1.1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Create ./group_vars/terraform.yml
       run: poetry run python ./scripts/create_ansible_vars.py
