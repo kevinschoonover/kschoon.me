@@ -32,5 +32,7 @@ digital_ocean.ini
 
 .keys/prod-kschoon-vms
 .keys/dev-kschoon-vms
+.keys/jwks.json
 
 group_vars/terraform.yml
+

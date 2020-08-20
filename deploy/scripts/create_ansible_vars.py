@@ -1,11 +1,14 @@
 # Create group_vars/terraform.yml
 import subprocess
 import json
+import os
 
 
 def main():
-    process = subprocess.Popen(["terraform", "output", "-json"], stdout=subprocess.PIPE)
-    output_json = process.communicate()[0].decode("utf-8").rstrip()
+    process = subprocess.Popen(
+        ["terraform", "output", "-json"], stdout=subprocess.PIPE, env=os.environ.copy()
+    )
+    output_json = process.communicate()[0].decode().rstrip()
     output_variables = []
 
     for output, data in json.loads(output_json).items():

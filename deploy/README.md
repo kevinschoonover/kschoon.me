@@ -63,6 +63,16 @@ All infrastructure as code (IaC) and instructions used to deploy the
 10. Request access to the [kschoon organization](https://app.terraform.io/app/kschoon/workspaces)
    on [Terraform Cloud](https://app.terraform.io)
 
+11. Generate a [JSON Web Token Key Set (JWKS)](https://auth0.com/docs/tokens/json-web-tokens/json-web-key-sets)
+    and copy the contents into the `JWKS` Github Action secret:
+    ```bash
+    cd ../sso/ && yarn && yarn generate:jwks && cat ./src/jwks.json >> ../deploy/.keys/jwks.json && cd -
+    ```
+
+    This command is a little complicated, but essentially it will generate a
+    JWKS and put it in `./deploy/.keys/jwks.json`. You can then open this file
+    and copy the contents into the secret.
+
 11. Generate a terraform cloud access token using their CLI:
     ```bash
     terraform login

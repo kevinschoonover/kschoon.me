@@ -86,6 +86,15 @@
   become: yes
   become_user: "{{ API_USER }}"
 
+- name: "Add the jwks.json file to sso"
+  copy:
+    src: "{{ role_path }}/../../.keys/jwks.json"
+    dest: "{{ API_INSTALLATION_DIR }}/sso/src/sso.env"
+    owner: "{{ API_USER }}"
+    mode: 0600
+  become: yes
+  become_user: "{{ API_USER }}"
+
 - name: Check if KSCHOONME_DOMAIN is set
   assert:
     that:

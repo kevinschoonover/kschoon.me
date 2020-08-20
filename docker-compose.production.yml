@@ -64,6 +64,8 @@ services:
       - traefik.http.routers.sso.tls.certresolver=tls_resolver
     environment:
       - ISSUER=https://sso.kschoon.me
+    volumes:
+      - "./sso/src/jwks.json:/usr/src/sso/"
   identity:
     image: "kschoonme/identity:latest"
     env_file:

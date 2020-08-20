@@ -44,7 +44,7 @@
   "scripts": {
     "build:css": "tailwind build -c src/tailwind.config.js src/tailwind.css -o src/public/main.css",
     "start:dev": "NODE_ENV='development' nodemon --signal SIGHUP",
-    "start:prod": "NODE_ENV='production' node dist/main.js",
+    "start:prod": "NODE_ENV='production' node dist/index.js",
     "generate:jwks": "ts-node -r tsconfig-paths/register src/helpers/generate-keys.ts",
     "build": "tsc -p tsconfig.json"
   }

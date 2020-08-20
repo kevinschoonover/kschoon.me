@@ -10,7 +10,7 @@ env:
   TF_WORKSPACE: production
   # Created with
   # https://www.terraform.io/docs/providers/azurerm/guides/service_principal_client_secret.html
-  ARM_CLIENT_ID: d32d4bd0-efd3-48ff-a4c0-07a6f394ee67
+  ARM_CLIENT_ID: 583c69ca-9f05-4a60-9a56-de4f6fcb4414
   ARM_CLIENT_SECRET: ${{ secrets.AZURE_RM_CLIENT_SECRET }}
   ARM_SUBSCRIPTION_ID: 50b759a4-ed0b-4148-b9ce-e2d1a3da7ec2
   ARM_TENANT_ID: 674d9780-1101-497a-a7f9-d7e74cf76399
@@ -330,6 +330,7 @@ jobs:
 
     - uses: hashicorp/setup-terraform@v1.1.0
       with:
+        terraform_wrapper: false
         terraform_version: ${{ env.terraform_version }}
         cli_config_credentials_token: ${{ secrets.TF_CLOUD_TOKEN }}
 
@@ -341,6 +342,9 @@ jobs:
       with:
         ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIV_KEY }}
 
+    - name: Write the jwks.json
+      run: echo "${{ secrets.JWKS }}" > .keys/jwks.json
+
     - name: Create vault password file
       run: echo ${{ secrets.ANSIBLE_VAULT_PASSWORD }} > ~/.vault_pass
 
@@ -351,3 +355,8 @@ jobs:
       run: poetry run ansible-playbook -i inventory/prod_azure_rm.yml site.yml --vault-password-file ~/.vault_pass
       env:
         DO_API_TOKEN: ${{ secrets.DO_ACCESS_TOKEN }}
+        AZURE_CLIENT_ID: ${{ env.ARM_CLIENT_ID }}
+        AZURE_SECRET: ${{ env.ARM_CLIENT_SECRET }}
+        AZURE_SUBSCRIPTION_ID: ${{ env.ARM_SUBSCRIPTION_ID }}
+        AZURE_TENANT: ${{ env.ARM_TENANT_ID }}
+

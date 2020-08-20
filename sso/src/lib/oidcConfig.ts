@@ -5,9 +5,16 @@ import {
   CanBePromise,
 } from "oidc-provider";
 import { JSONWebKeySet } from "jose";
+import { config as appConfig } from "../config";
 import { renderError } from "../helpers/renderError";
 
-import jwks from "../jwks.json";
+let jwks;
+
+if (appConfig.IS_PRODUCTION) {
+  jwks = require("../jwks.json");
+} else {
+  jwks = require("./devJwks.json");
+}
 
 const { Prompt, base: policy } = interactionPolicy;
 
