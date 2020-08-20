@@ -2,6 +2,13 @@ name: Test and Deploy the Application
 
 on: [push]
 
+env:
+  terraform_version: 0.13.0
+  TF_VAR_do_token: ${{ secrets.DO_ACCESS_TOKEN }}
+  TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+  TF_VAR_postgres_admin_pass: ${{ secrets.POSTGRES_ADMIN_PASS }}
+  TF_WORKSPACE: production
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -78,12 +85,6 @@ jobs:
         working-directory: ./deploy
 
     env:
-      terraform_version: 0.13.0
-      TF_VAR_do_token: ${{ secrets.DO_ACCESS_TOKEN }}
-      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      TF_VAR_postgres_admin_pass: ${{ secrets.POSTGRES_ADMIN_PASS }}
-      TF_WORKSPACE: production
-
     steps:
       - uses: actions/checkout@v2
       - name: Login to azure
@@ -295,13 +296,6 @@ jobs:
     defaults:
       run:
         working-directory: ./deploy
-
-    env:
-      terraform_version: 0.13.0
-      TF_VAR_do_token: ${{ secrets.DO_ACCESS_TOKEN }}
-      TF_VAR_cloudflare_api_token: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-      TF_VAR_postgres_admin_pass: ${{ secrets.POSTGRES_ADMIN_PASS }}
-      TF_WORKSPACE: production
 
     if: github.ref == 'refs/heads/master'
     steps:
