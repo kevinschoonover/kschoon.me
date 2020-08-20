@@ -126,6 +126,6 @@ impl Checkin {
 pub struct NewCheckin {
     pub first_name: String,
     pub last_name: String,
-    #[field(validator(and(StringMinLength(length = "8"), StringMaxLength(length = "8"))))]
+    #[field(validator(and(StringMinLength(length = "6"), StringMaxLength(length = "8"))))]
     pub reservation_code: String,
 }

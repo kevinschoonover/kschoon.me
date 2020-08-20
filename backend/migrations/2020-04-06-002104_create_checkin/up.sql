@@ -5,7 +5,7 @@ CREATE TABLE checkins (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR NOT NULL,
     last_name VARCHAR NOT NULL,
-    reservation_code VARCHAR(6) NOT NULL,
+    reservation_code VARCHAR(8) NOT NULL,
     status CheckinStatus default 'WAITING' NOT NULL,
     logs TEXT NULL
 )

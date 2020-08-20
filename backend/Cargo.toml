@@ -9,8 +9,8 @@ name = "backend"
 path = "src/main.rs"
 
 [dependencies]
-async-graphql = "1.16.1"
-async-graphql-warp = "1.16.1"
+async-graphql = "1.16.9"
+async-graphql-warp = "1.16.9"
 chrono = "0.4"
 # diesel = { version = "1.4", features = ["postgres", "chrono", "uuidv07", "r2d2"] }
 diesel = { version = "1.4", features = ["postgres", "r2d2"] }
