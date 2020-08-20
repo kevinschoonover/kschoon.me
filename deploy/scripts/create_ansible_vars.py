@@ -9,6 +9,7 @@ def main():
         "postgres_username",
         "postgres_password",
         "postgres_identity_db",
+        "postgres_checkins_db",
     ]
     output_variables = []
     procs = [

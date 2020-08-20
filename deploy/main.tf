@@ -66,8 +66,25 @@ resource "azurerm_postgresql_server" "primary" {
   ssl_enforcement_enabled      = true
 }
 
+resource "azurerm_postgresql_firewall_rule" "example" {
+  name                = "vm1"
+  resource_group_name = azurerm_resource_group.kschoonme.name
+  server_name         = azurerm_postgresql_server.primary.name
+  start_ip_address    = azurerm_linux_virtual_machine.primary.public_ip_address
+  end_ip_address      = azurerm_linux_virtual_machine.primary.public_ip_address
+}
+
+
 resource "azurerm_postgresql_database" "identity" {
   name                = "identity"
+  resource_group_name = azurerm_resource_group.kschoonme.name
+  server_name         = azurerm_postgresql_server.primary.name
+  charset             = "UTF8"
+  collation           = "English_United States.1252"
+}
+
+resource "azurerm_postgresql_database" "checkins" {
+  name                = "checkins"
   resource_group_name = azurerm_resource_group.kschoonme.name
   server_name         = azurerm_postgresql_server.primary.name
   charset             = "UTF8"
@@ -236,4 +253,8 @@ output "postgres_password" {
 
 output "postgres_identity_db" { 
   value = azurerm_postgresql_database.identity.name
+}
+
+output "postgres_checkins_db" { 
+  value = azurerm_postgresql_database.checkins.name
 }
