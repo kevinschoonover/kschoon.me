@@ -10,7 +10,7 @@ unparsedParams?.split("&").forEach((values) => {
   if (key === "ssl") {
     params.ssl = value === "true" || params.ssl;
   } else if (key === "sslmode") {
-    params.ssl = value === "required" || params.ssl;
+    params.ssl = value === "require" || params.ssl;
   }
 });
 
