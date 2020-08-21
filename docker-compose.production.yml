@@ -23,10 +23,6 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - "./acme.json:/acme.json"
-  faktory_worker:
-    image: "kschoonme/faktory-worker:latest"
-    env_file:
-      - ./backend/.env
 
   web:
     image: "kschoonme/backend:latest"
@@ -50,6 +46,8 @@ services:
       - PRODUCTION=true
   faktory_worker:
     image: "kschoonme/faktory-worker:latest"
+    env_file:
+      - ./backend/.env
 
   notifications:
     image: "kschoonme/notifications:latest"
