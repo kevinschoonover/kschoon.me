@@ -62,7 +62,5 @@ services:
     # Image/build/volumes specified in docker-compose.{production, override}.yml
     labels:
       - traefik.enable=false
-    environment:
-      - POSTGRES_URL="postgres://postgres:postgres@db:5432"
 
   # redis/Database defined in docker-compose.override.yml

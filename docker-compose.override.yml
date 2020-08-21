@@ -48,6 +48,8 @@ services:
       target: development
     volumes:
       - "./identity/:/usr/src/identity/"
+    environment:
+      - POSTGRES_URL="postgres://postgres:postgres@db:5432"
 
   db:
     image: "postgres:12"

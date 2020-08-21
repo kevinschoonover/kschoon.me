@@ -3,7 +3,7 @@ import { config } from "../config";
 
 export = {
   type: "postgres",
-  url: config.POSTGRES_URL || "postgres://postgres:postgres@db:5432",
+  url: config.POSTGRES_URL,
   logging: ["error", "warn"],
   logger: "advanced-console",
   cache: true,
