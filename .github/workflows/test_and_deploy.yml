@@ -343,7 +343,7 @@ jobs:
         ssh-private-key: ${{ secrets.DEPLOY_SSH_PRIV_KEY }}
 
     - name: Write the jwks.json
-      run: echo "${{ secrets.JWKS }}" > .keys/jwks.json
+      run: echo '${{ secrets.JWKS }}' > .keys/jwks.json
 
     - name: Create vault password file
       run: echo ${{ secrets.ANSIBLE_VAULT_PASSWORD }} > ~/.vault_pass
