@@ -232,9 +232,17 @@ resource "cloudflare_record" "mail2" {
   priority = 20
 }
 
-output "redis_url" {
+output "redis_hostname" {
+  value = azurerm_redis_cache.primary.hostname
+}
+
+output "redis_ssl_port" {
+  value = azurerm_redis_cache.primary.ssl_port
+}
+
+output "redis_access_key" {
   sensitive = true
-  value = azurerm_redis_cache.primary.primary_connection_string
+  value = azurerm_redis_cache.primary.primary_access_key
 }
 
 output "postgres_fqdn" { 

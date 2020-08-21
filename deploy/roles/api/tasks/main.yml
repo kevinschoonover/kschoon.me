@@ -3,7 +3,9 @@
   assert:
     that:
       - "postgres_fqdn != ''"
-      - "redis_url != ''"
+      - "redis_access_key != ''"
+      - "redis_ssl_port != ''"
+      - "redis_hostname != ''"
     fail_msg: "Could not find all variables to should be specified by terraform. Please check that './group_vars/terraform.yml' exists and/or if the variable names have changed."
 
 - name: "Install docker on the host"
@@ -16,6 +18,7 @@
     system: yes
     groups:
       - docker
+    uid: "{{ API_USER_UID }}"
   become: yes
 
 - name: "Clone the kschoon.me repo"
@@ -69,6 +72,8 @@
     src: "sso.env.j2"
     dest: "{{ API_INSTALLATION_DIR }}/.docker/sso.env"
     owner: "{{ API_USER }}"
+  vars:
+    redis_url: rediss://:{{ redis_access_key | urlencode }}@{{ redis_hostname }}:{{ redis_ssl_port }}/0
   become: yes
   become_user: "{{ API_USER }}"
 
