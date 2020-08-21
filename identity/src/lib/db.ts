@@ -1,9 +1,22 @@
 import { ConnectionOptions } from "typeorm";
 import { config } from "../config";
 
+const params: { ssl: boolean } = { ssl: false };
+
+const [url, unparsedParams] = config.POSTGRES_URL.split("?");
+
+unparsedParams?.split("&").forEach((values) => {
+  const [key, value] = values.split("=");
+  if (key === "ssl") {
+    params.ssl = value === "true" || params.ssl;
+  } else if (key === "sslmode") {
+    params.ssl = value === "required" || params.ssl;
+  }
+});
+
 export = {
   type: "postgres",
-  url: config.POSTGRES_URL,
+  url,
   logging: ["error", "warn"],
   logger: "advanced-console",
   cache: true,
@@ -17,6 +30,9 @@ export = {
   entities: [`${__dirname}/../resources/**/index{.js,.ts}`],
   migrations: [`${__dirname}/../migrations/**/*{.js,.ts}`],
   subscribers: [`${__dirname}/../subscribers/**/*{.js.ts}`],
+  extra: {
+    ssl: params.ssl,
+  },
   cli: {
     entitiesDir: `${__dirname}/../entities`,
     migrationsDir: `${__dirname}/../migrations`,
