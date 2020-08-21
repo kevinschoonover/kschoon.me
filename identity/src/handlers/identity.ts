@@ -15,11 +15,11 @@ import {
   PasswordlessResult,
 } from "kschoonme-identity-pb";
 
-import { sendText } from "src/lib/grpc";
 import {
   NotificationRequest,
   NotificationResult,
 } from "kschoonme-notifications-pb";
+import { sendText } from "../lib/grpc";
 import { NotFoundError, InvalidArgumentError } from "../errors";
 import { User } from "../resources/User";
 import { PG_UNIQUE_CONSTRAINT_VIOLATION } from "../consts";
