@@ -66,7 +66,7 @@ RUN poetry install
 # will become mountpoint of our code
 WORKDIR /usr/src/worker
 
-CMD watchmedo auto-restart --recursive --pattern="*.py" --directory="." python main.py
+CMD bash ./wait-for-it.sh web:8080 -q -- watchmedo auto-restart --recursive --pattern="*.py" --directory="." python main.py
 
 
 # `production` image used for runtime
@@ -74,4 +74,5 @@ FROM python-base as production
 COPY --from=builder-base $PYSETUP_PATH $PYSETUP_PATH
 COPY . /usr/src/worker
 WORKDIR /usr/src/worker
-CMD ["python", "main.py"]
+
+CMD bash ./wait-for-it.sh web:8080 -q -- python main.py
