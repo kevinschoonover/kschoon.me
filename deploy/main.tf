@@ -34,6 +34,23 @@ resource "azurerm_resource_group" "kschoonme" {
   location = "Central US"
 }
 
+resource "azurerm_virtual_network" "primary" {
+  name                = terraform.workspace == "production" ? "prod-kschoonme-vnet-primary" : "staging-kschoonme-vnet-primary"
+
+  location            = azurerm_resource_group.kschoonme.location
+  resource_group_name = azurerm_resource_group.kschoonme.name
+  address_space       = ["10.0.0.0/16"]
+}
+
+resource "azurerm_subnet" "db" {
+  name                 = terraform.workspace == "production" ? "prod-kschoonme-subnet-primary" : "staging-kschoonme-subnet-primary"
+
+  resource_group_name  = azurerm_resource_group.kschoonme.name
+  virtual_network_name = azurerm_virtual_network.primary.name
+  address_prefixes     = ["10.0.1.0/24"]
+  service_endpoints    = ["Microsoft.Sql"]
+}
+
 # NOTE: the Name used for Redis needs to be globally unique
 resource "azurerm_redis_cache" "primary" {
   name                = terraform.workspace == "production" ? "prod-kschoonme-redis-primary" : "staging-kschoonme-redis-primary"
@@ -66,12 +83,19 @@ resource "azurerm_postgresql_server" "primary" {
   ssl_enforcement_enabled      = true
 }
 
-resource "azurerm_postgresql_firewall_rule" "example" {
+resource "azurerm_postgresql_virtual_network_rule" "primary" {
+  name                                 = "postgresql-vnet-rule"
+  resource_group_name                  = azurerm_resource_group.kschoonme.name
+  server_name                          = azurerm_postgresql_server.primary.name
+  subnet_id                            = azurerm_subnet.db.id
+}
+
+resource "azurerm_postgresql_firewall_rule" "vm1" {
   name                = "vm1"
   resource_group_name = azurerm_resource_group.kschoonme.name
   server_name         = azurerm_postgresql_server.primary.name
-  start_ip_address    = azurerm_linux_virtual_machine.primary.public_ip_address
-  end_ip_address      = azurerm_linux_virtual_machine.primary.public_ip_address
+  start_ip_address    = azurerm_linux_virtual_machine.primary.private_ip_address
+  end_ip_address      = azurerm_linux_virtual_machine.primary.private_ip_address
 }
 
 
@@ -89,20 +113,6 @@ resource "azurerm_postgresql_database" "checkins" {
   server_name         = azurerm_postgresql_server.primary.name
   charset             = "UTF8"
   collation           = "English_United States.1252"
-}
-
-resource "azurerm_virtual_network" "primary" {
-  name                = "kschoonme-network"
-  address_space       = ["10.0.0.0/16"]
-  location            = azurerm_resource_group.kschoonme.location
-  resource_group_name = azurerm_resource_group.kschoonme.name
-}
-
-resource "azurerm_subnet" "internal" {
-  name                 = "internal"
-  resource_group_name  = azurerm_resource_group.kschoonme.name
-  virtual_network_name = azurerm_virtual_network.primary.name
-  address_prefixes     = ["10.0.2.0/24"]
 }
 
 resource "azurerm_public_ip" "vm1" {
@@ -123,9 +133,9 @@ resource "azurerm_network_interface" "vm1" {
 
   ip_configuration {
     name                          = "network"
-    subnet_id                     = azurerm_subnet.internal.id
+    subnet_id                     = azurerm_subnet.db.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id = azurerm_public_ip.vm1.id
+    public_ip_address_id          = azurerm_public_ip.vm1.id
   }
 }
 
@@ -133,7 +143,7 @@ resource "azurerm_linux_virtual_machine" "primary" {
   name                = terraform.workspace == "production" ? "prod-kschoonme-vm1" : "staging-kschoonme-vm1"
   resource_group_name = azurerm_resource_group.kschoonme.name
   location            = azurerm_resource_group.kschoonme.location
-  size                = "Standard_F2"
+  size                = "Standard_A0"
   admin_username      = "kevin"
   network_interface_ids = [
     azurerm_network_interface.vm1.id,
